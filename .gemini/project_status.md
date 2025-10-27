@@ -1,10 +1,10 @@
 # CIA Project Status
 
-**Last Completed Step:** None
+**Last Completed Step:** Этап 1.1: Подготовка GPU-ноды в K8s и установка NVIDIA GPU Operator
 
-**Current Step:** Этап 1.1: YC GPU-Кластер (Terraform)
+**Current Step:** Этап 1.2.1: Развертывание Kubeflow
 
-**Next Step:** Этап 1.2: Локальный стек
+**Next Step:** Этап 1.2.2: Развертывание Qdrant
 
 ---
 
@@ -26,3 +26,12 @@
 - **Model Progression:** The initial small model will allow us to build and validate the entire MLOps pipeline end-to-end. After upgrading the hardware, we will switch to a larger, more capable model (~8B parameters). This will provide a clear case study on how model size impacts performance and answer quality within the same infrastructure.
 - **Iterative Re-training:** The system is designed for iterative improvement. Model interactions will be logged and traced in Langfuse. This data will be periodically reviewed to create new, high-quality training examples, which will be used to re-run the fine-tuning pipeline and deploy improved model versions.
 
+### GPU Node Setup (Completed 2025-10-27)
+
+- **GPU Node:** `kube-gpu-small-1` (NVIDIA GeForce RTX 3050 Laptop GPU, 4GB VRAM) successfully integrated into the Kubernetes cluster.
+- **GPU Management:** NVIDIA GPU Operator installed and configured for automated driver, container toolkit, and device plugin management.
+- **GPU Configuration:**
+    - `gpu-small` NodeGroup configured for **Time-Slicing** (4 virtual GPUs).
+    - `gpu-standard` NodeGroup configured for **Exclusive** access.
+- **Deckhouse Integration:** Resolved `admission-policy-engine` conflict by labeling `gpu-operator` namespace with `security.deckhouse.io/pod-policy=privileged`.
+- **Validation:** Confirmed GPU resource allocation (`nvidia.com/gpu: 4`) and successful execution of CUDA workloads via a test pod.

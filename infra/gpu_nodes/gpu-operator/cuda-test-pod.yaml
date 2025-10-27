@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cuda-test
+spec:
+  restartPolicy: OnFailure
+  containers:
+    - name: cuda-container
+      image: nvcr.io/nvidia/cuda:12.2.2-runtime-ubuntu22.04
+      command: ["nvidia-smi"]
+      resources:
+        limits:
+          nvidia.com/gpu: 1 # Request 1 GPU (or 1 replica in time-slicing mode)
+  tolerations:
+    - key: nvidia.com/gpu
+      operator: Exists
+      effect: NoSchedule

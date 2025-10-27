@@ -1,0 +1,35 @@
+# This file contains all GPU-related NodeGroup configurations.
+
+# NodeGroup for small nodes (e.g., 3050 4GB).
+apiVersion: deckhouse.io/v1
+kind: NodeGroup
+metadata:
+  name: gpu-small
+spec:
+  nodeType: Static
+  nodeTemplate:
+    labels:
+      # This label remains for our convenience and can be used in selectors.
+      gpu-type: small
+      # This label tells the NVIDIA GPU Operator to apply the 'timeslicing-config' profile.
+      nvidia.com/device-plugin.config: timeslicing-config
+    taints:
+      - key: nvidia.com/gpu
+        effect: NoSchedule
+---
+# NodeGroup for standard nodes (e.g., 3060 12GB).
+apiVersion: deckhouse.io/v1
+kind: NodeGroup
+metadata:
+  name: gpu-standard
+spec:
+  nodeType: Static
+  nodeTemplate:
+    labels:
+      # This label remains for our convenience and can be used in selectors.
+      gpu-type: standard
+      # This label tells the NVIDIA GPU Operator to apply the 'exclusive-config' profile.
+      nvidia.com/device-plugin.config: exclusive-config
+    taints:
+      - key: nvidia.com/gpu
+        effect: NoSchedule

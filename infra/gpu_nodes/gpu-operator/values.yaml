@@ -1,0 +1,38 @@
+# Custom values for the NVIDIA GPU Operator
+
+devicePlugin:
+  config:
+    # Tell the chart to create the device-plugin ConfigMap for us.
+    create: true
+    # Name of the ConfigMap to be created.
+    name: "nvidia-device-plugin-configs"
+    # The default configuration to apply if a node has no specific label.
+    default: "exclusive-config"
+
+    # The different configuration profiles that will be stored in the ConfigMap.
+    data:
+      # Default configuration for nodes like 'gpu-standard'.
+      # It provides exclusive access to the GPU.
+      exclusive-config: |-
+        version: v1
+        flags:
+          migStrategy: none
+
+      # Time-slicing configuration for the 'gpu-small' node group.
+      # It will create 4 virtual GPUs from one physical GPU.
+      timeslicing-config: |-
+        version: v1
+        sharing:
+          timeSlicing:
+            resources:
+            - name: nvidia.com/gpu
+              replicas: 4
+
+# Enable the DCGM exporter and its ServiceMonitor
+dcgmExporter:
+  serviceMonitor:
+    enabled: true
+    # Add a specific label that Deckhouse Prometheus looks for
+    # to discover custom scrape targets.
+    additionalLabels:
+      prometheus.deckhouse.io/custom-target: "true"
