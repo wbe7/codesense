@@ -413,6 +413,10 @@ deploykf_opt:
       generate:
         kubectlImage:
           repository: "docker.io/bitnamilegacy/kubectl"
+      mysql:
+        image:
+          repository: "docker.io/mysql"
+          tag: "8.0-oraclelinux8"
 
     ## configs for the "root@localhost" mysql user
     ##  - these credentials are used by the liveness probes

@@ -1,3 +1,7 @@
 generate:
   kubectlImage:
     repository: docker.io/bitnamilegacy/kubectl
+mysql:
+  image:
+    repository: docker.io/mysql
+    tag: 8.0-oraclelinux8
