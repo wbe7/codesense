@@ -409,6 +409,10 @@ deploykf_opt:
     namespace: deploykf-mysql
     persistence:
       storageClass: freenas-nfs-csi
+    valuesOverrides: |
+      generate:
+        kubectlImage:
+          repository: "docker.io/bitnamilegacy/kubectl"
 
     ## configs for the "root@localhost" mysql user
     ##  - these credentials are used by the liveness probes
