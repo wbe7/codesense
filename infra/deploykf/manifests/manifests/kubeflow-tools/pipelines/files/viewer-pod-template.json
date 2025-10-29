@@ -1,0 +1,37 @@
+{
+  "spec": {
+    "containers": [
+      {
+        "env": [
+          {
+            "name": "AWS_REGION",
+            "value": ""
+          },
+          {
+            "name": "S3_ENDPOINT",
+            "value": "http://192.168.77.7:9000"
+          },
+          {
+            "name": "AWS_ACCESS_KEY_ID",
+            "valueFrom": {
+              "secretKeyRef": {
+                "key": "accessKey",
+                "name": "cloned--kubeflow-pipelines--backend-object-store-auth"
+              }
+            }
+          },
+          {
+            "name": "AWS_SECRET_ACCESS_KEY",
+            "valueFrom": {
+              "secretKeyRef": {
+                "key": "secretKey",
+                "name": "cloned--kubeflow-pipelines--backend-object-store-auth"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "serviceAccountName": "default-editor"
+  }
+}
