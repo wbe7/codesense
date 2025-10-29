@@ -1,0 +1,3 @@
+generate:
+  kubectlImage:
+    repository: docker.io/bitnamilegacy/kubectl

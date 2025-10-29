@@ -117,6 +117,10 @@ deploykf_core:
   ## --------------------------------------
   deploykf_auth:
     namespace: deploykf-auth
+    valuesOverrides: |
+      generate:
+        kubectlImage:
+          repository: "docker.io/bitnamilegacy/kubectl"
 
     ## dex configs
     ##
