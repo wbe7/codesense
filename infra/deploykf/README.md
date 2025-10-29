@@ -83,3 +83,23 @@ kubectl label namespace deploykf-auth security.deckhouse.io/pod-policy=privilege
 ```bash
 kubectl label namespace deploykf-dashboard security.deckhouse.io/pod-policy=privileged
 ```
+
+#### `kubeflow-argo-workflows`
+```bash
+kubectl label namespace kubeflow-argo-workflows security.deckhouse.io/pod-policy=privileged
+```
+
+#### `kubeflow`
+```bash
+kubectl label namespace kubeflow security.deckhouse.io/pod-policy=privileged
+```
+
+#### `team-1`
+```bash
+kubectl label namespace team-1 security.deckhouse.io/pod-policy=privileged
+```
+
+#### `team-1-prod`
+```bash
+kubectl label namespace team-1-prod security.deckhouse.io/pod-policy=privileged
+```

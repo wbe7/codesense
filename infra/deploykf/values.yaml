@@ -103,6 +103,15 @@ deploykf_dependencies:
   kyverno:
     enabled: true
     namespace: kyverno
+    valuesOverrides: |
+      kyverno:
+          cleanupJobs:
+            admissionReports:
+              image:
+                repository: "docker.io/bitnami/kubectl"
+            clusterAdmissionReports:
+              image:
+                repository: "docker.io/bitnami/kubectl"
 
 
 ## --------------------------------------------------------------------------------
