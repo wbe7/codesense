@@ -108,10 +108,10 @@ deploykf_dependencies:
           cleanupJobs:
             admissionReports:
               image:
-                repository: "docker.io/bitnami/kubectl"
+                repository: "docker.io/bitnamilegacy/kubectl"
             clusterAdmissionReports:
               image:
-                repository: "docker.io/bitnami/kubectl"
+                repository: "docker.io/bitnamilegacy/kubectl"
 
 
 ## --------------------------------------------------------------------------------
