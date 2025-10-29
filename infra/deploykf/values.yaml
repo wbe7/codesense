@@ -86,7 +86,7 @@ deploykf_dependencies:
     enabled: false
     clusterIssuer:
       enabled: false
-      issuerName: letsencrypt
+      issuerName: cloudflare
 
 
   ## --------------------------------------

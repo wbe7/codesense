@@ -32,7 +32,7 @@ ARGOCD_PASSWORD="${ARGOCD_PASSWORD:-}"
 #  - 'always': always PRUNE resources without prompting
 #  - 'prompt': for each application that requires pruning, prompt the user to confirm
 #  - 'ask': prompt the user to choose a mode
-ARGOCD_PRUNE_MODE="${ARGOCD_PRUNE_MODE:-ask}"
+ARGOCD_PRUNE_MODE="${ARGOCD_PRUNE_MODE:-ALWAYS}"
 ARGOCD_PRUNE_MODE=$(echo "$ARGOCD_PRUNE_MODE" | tr '[:upper:]' '[:lower:]')
 
 # timeouts for argocd commands
