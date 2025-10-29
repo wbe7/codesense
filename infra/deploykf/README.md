@@ -65,3 +65,21 @@ bash ./sync_argocd_apps.sh
 
 - **Основная конфигурация**: Основная конфигурация стека deployKF управляется в файле `values.yaml`.
 - **Cert-Manager**: Если вы используете Deckhouse, модуль `cert-manager` настраивается через отдельный файл `cert-manager-config.yaml`, который необходимо применять к кластеру вручную.
+
+## Устранение неисправностей
+
+### Ошибка admission webhook при создании подов
+
+Если вы используете Deckhouse, его политики безопасности могут блокировать создание подов в некоторых неймспейсах. В этом случае необходимо вручную добавить лейбл к неймспейсу, чтобы разрешить запуск привилегированных подов.
+
+Выполните следующие команды для соответствующих неймспейсов:
+
+#### `deploykf-auth`
+```bash
+kubectl label namespace deploykf-auth security.deckhouse.io/pod-policy=privileged
+```
+
+#### `deploykf-dashboard`
+```bash
+kubectl label namespace deploykf-dashboard security.deckhouse.io/pod-policy=privileged
+```
