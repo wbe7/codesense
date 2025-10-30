@@ -185,19 +185,8 @@ deploykf_core:
         - type: oidc
           id: deckhouse-dex
           name: Deckhouse Dex
-          config:
-            issuer: https://dex.cloudnative.space
-            clientID: "dex-client-deploykf@deploykf-auth"
-            clientSecret:
-              existingSecret: "dex-client-deploykf"
-              existingSecretKey: "clientSecret"
-            redirectURI: https://deploykf.cloudnative.space/dex/callback
-            scopes:
-              - openid
-              - email
-              - profile
-              - offline_access
-            insecureSkipEmailVerified: true
+          configExistingSecret: "deploykf-dex-connector-config"
+          configExistingSecretKey: "connector-config.yaml"
 
       ## dex OpenID Connect clients
       ##
