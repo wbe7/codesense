@@ -109,9 +109,6 @@ kyverno:
           - apiGroups: ["apps"]
             resources: ["statefulsets"]
             verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-          - apiGroups: ["kubeflow.org"]
-            resources: ["poddefaults"]
-            verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
   ## Cleanup controller configuration
   cleanupController:
@@ -139,9 +136,6 @@ kyverno:
             verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
           - apiGroups: ["apps"]
             resources: ["statefulsets"]
-            verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-          - apiGroups: ["kubeflow.org"]
-            resources: ["poddefaults"]
             verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
   ## Reports controller configuration

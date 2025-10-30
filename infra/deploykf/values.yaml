@@ -590,7 +590,7 @@ kubeflow_tools:
   ##          poddefaults-webhook
   ## --------------------------------------
   poddefaults_webhook:
-    enabled: true
+    enabled: false
 
 
   ## --------------------------------------

@@ -38,7 +38,6 @@ resources:
   - kubeflow-tools/notebooks--jupyter-web-app.yaml
   - kubeflow-tools/notebooks--notebook-controller.yaml
   - kubeflow-tools/pipelines.yaml
-  - kubeflow-tools/poddefaults-webhook.yaml
   - kubeflow-tools/tensorboards--tensorboard-controller.yaml
   - kubeflow-tools/tensorboards--tensorboards-web-app.yaml
   - kubeflow-tools/training-operator.yaml
