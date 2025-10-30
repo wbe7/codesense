@@ -101,7 +101,7 @@ deploykf_dependencies:
   ##                kyverno
   ## --------------------------------------
   kyverno:
-    enabled: false
+    enabled: true
     namespace: kyverno
     valuesOverrides: |
       kyverno:
