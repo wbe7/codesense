@@ -1,0 +1,8 @@
+kyverno:
+  cleanupJobs:
+    admissionReports:
+      image:
+        repository: docker.io/bitnamilegacy/kubectl
+    clusterAdmissionReports:
+      image:
+        repository: docker.io/bitnamilegacy/kubectl
