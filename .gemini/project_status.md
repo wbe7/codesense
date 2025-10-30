@@ -35,3 +35,57 @@
     - `gpu-standard` NodeGroup configured for **Exclusive** access.
 - **Deckhouse Integration:** Resolved `admission-policy-engine` conflict by labeling `gpu-operator` namespace with `security.deckhouse.io/pod-policy=privileged`.
 - **Validation:** Confirmed GPU resource allocation (`nvidia.com/gpu: 4`) and successful execution of CUDA workloads via a test pod.
+
+### deployKF Configuration (Completed 2025-10-29)
+
+- **`values.yaml` Configuration:**
+    - `argocd.source.repo.url`: `https://github.com/wbe7/codesense.git`
+    - `argocd.source.repo.revision`: `main`
+    - `argocd.source.repo.path`: `infra/deploykf/manifests`
+    - `deploykf_dependencies.cert_manager.clusterIssuer.issuerName`: `cloudflare`
+    - `deploykf_core.deploykf_istio_gateway.gateway.hostname`: `deploykf.cloudnative.space`
+    - `deploykf_core.deploykf_istio_gateway.gatewayService.loadBalancerIP`: `192.168.77.207`
+    - `deploykf_opt.deploykf_minio.enabled`: `false` (using external S3)
+    - `deploykf_opt.deploykf_mysql.persistence.storageClass`: `freenas-nfs-csi`
+    - `deploykf_core.deploykf_auth.valuesOverrides` for `generate.kubectlImage.repository`: `docker.io/bitnamilegacy/kubectl`
+    - `deploykf_opt.deploykf_mysql.valuesOverrides` for `generate.kubectlImage.repository`: `docker.io/bitnamilegacy/kubectl`
+- **ArgoCD Installation:**
+    - `install_argocd.sh` and `sync_argocd_apps.sh` scripts moved to `infra/deploykf/`.
+    - `argocd-install` directory created with necessary plugin files.
+    - `assets-pvc.yaml` updated with `storageClassName: freenas-nfs-csi`.
+    - `argocd` CLI installed via Homebrew.
+    - `app-of-apps.yaml` applied to create the main ArgoCD application.
+- **Cert-Manager Configuration:**
+    - `ModuleConfig` for `cert-manager` applied with Cloudflare API token and email.
+    - `cloudflare` ClusterIssuer successfully created by Deckhouse.
+- **DNS Configuration:**
+    - `cloudnative.space` domain fully delegated to Cloudflare.
+    - `A` record for `*.deploykf.cloudnative.space` configured to point to the external IP.
+- **Troubleshooting Notes:**
+    - Added instructions to `infra/deploykf/README.md` for manually labeling `deploykf-auth` and `deploykf-dashboard` namespaces with `security.deckhouse.io/pod-policy=privileged` to resolve admission webhook errors.
+
+### Kubeflow Deployment Troubleshooting (Completed 2025-10-30)
+
+- **Issue 1: `ml-pipeline-ui-artifact` pod stuck due to missing secret `cloned--pipelines-object-store-auth` in `team-1-prod`.**
+    - **Root Cause:**
+        - Kyverno `ClusterPolicy` `argo-workflows--clone-bucket-secret` was cloning the secret with an incorrect name (`cloned--kubeflow-pipelines--backend-object-store-auth`) and only to `kubeflow-argo-workflows` namespace, not to profile namespaces.
+        - `deploykf`'s `values.yaml` was configured for `accessKey` and `secretKey`, but the pod expected `access_key` and `secret_key`.
+    - **Resolution:**
+        - Updated `infra/deploykf/values.yaml`:
+            - `kubeflow_tools.pipelines.objectStore.auth.existingSecretAccessKeyKey` set to `access_key`.
+            - `kubeflow_tools.pipelines.objectStore.auth.existingSecretSecretKeyKey` set to `secret_key`.
+        - Created custom Kyverno `ClusterPolicy` (`infra/deploykf/fix-secret-cloning-policy.yaml`) to correctly clone `deploykf-s3-credentials` from `kubeflow` to namespaces with label `pipelines.kubeflow.org/enabled: "true"` under the name `cloned--pipelines-object-store-auth`.
+        - User re-created `deploykf-s3-credentials` with correct key names (`access_key`, `secret_key`).
+        - Applied the custom `ClusterPolicy`.
+        - Regenerated manifests and synced ArgoCD.
+
+- **Issue 2: `ml-pipeline-ui-artifact` pod stuck due to `tls: failed to verify certificate: x509: certificate signed by unknown authority` from `poddefaults-webhook`.**
+    - **Root Cause:**
+        - `MutatingWebhookConfiguration` for `poddefaults-webhook` had an empty `caBundle`.
+        - `cert-manager-cainjector` was disabled in Deckhouse, preventing `caBundle` injection.
+        - The `Certificate` resource for the webhook was configured to use a local `Issuer` instead of a trusted `ClusterIssuer`.
+    - **Resolution:**
+        - Re-enabled `kubeflow_tools.poddefaults_webhook` in `infra/deploykf/values.yaml`.
+        - User enabled `enableCAInjector: true` in Deckhouse `cert-manager` module configuration.
+        - Deleted and recreated the `MutatingWebhookConfiguration` `admission-webhook-mutating-webhook-configuration` to force `cert-manager-cainjector` to inject the `caBundle`.
+        - Verified `caBundle` injection and pod status.
