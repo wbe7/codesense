@@ -15,7 +15,7 @@
             "name": "AWS_ACCESS_KEY_ID",
             "valueFrom": {
               "secretKeyRef": {
-                "key": "accessKey",
+                "key": "access_key",
                 "name": "cloned--kubeflow-pipelines--backend-object-store-auth"
               }
             }
@@ -24,7 +24,7 @@
             "name": "AWS_SECRET_ACCESS_KEY",
             "valueFrom": {
               "secretKeyRef": {
-                "key": "secretKey",
+                "key": "secret_key",
                 "name": "cloned--kubeflow-pipelines--backend-object-store-auth"
               }
             }

@@ -18,8 +18,8 @@ deployKF_helpers:
         source_secret_name: "deploykf-s3-credentials"
         source_secret_namespace: "kubeflow"
         secret_name: "cloned--kubeflow-pipelines--backend-object-store-auth"
-        access_key_key: "accessKey"
-        secret_key_key: "secretKey"
+        access_key_key: "access_key"
+        secret_key_key: "secret_key"
 
 
 ########################################

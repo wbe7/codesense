@@ -79,12 +79,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: "cloned--kubeflow-pipelines--backend-object-store-auth"
-                  key: "accessKey"
+                  key: "access_key"
             - name: MINIO_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: "cloned--kubeflow-pipelines--backend-object-store-auth"
-                  key: "secretKey"
+                  key: "secret_key"
 
             ## ================================
             ## S3 - Object Store Configs
@@ -110,12 +110,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: "cloned--kubeflow-pipelines--backend-object-store-auth"
-                  key: "accessKey"
+                  key: "access_key"
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: "cloned--kubeflow-pipelines--backend-object-store-auth"
-                  key: "secretKey"
+                  key: "secret_key"
 
             ## ================================
             ## Other Configs

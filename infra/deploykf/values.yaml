@@ -545,8 +545,8 @@ kubeflow_tools:
       useSSL: false
       auth:
         existingSecret: "deploykf-s3-credentials"
-        existingSecretAccessKeyKey: "accessKey"
-        existingSecretSecretKeyKey: "secretKey"
+        existingSecretAccessKeyKey: "access_key"
+        existingSecretSecretKeyKey: "secret_key"
 
     ## mysql connection configs
     ##  - if `useExternal` is true, pipelines will use the specified external mysql database

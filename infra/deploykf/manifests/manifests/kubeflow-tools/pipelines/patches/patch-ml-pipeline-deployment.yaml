@@ -124,9 +124,9 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: "cloned--kubeflow-pipelines--backend-object-store-auth"
-                  key: "accessKey"
+                  key: "access_key"
             - name: OBJECTSTORECONFIG_SECRETACCESSKEY
               valueFrom:
                 secretKeyRef:
                   name: "cloned--kubeflow-pipelines--backend-object-store-auth"
-                  key: "secretKey"
+                  key: "secret_key"
