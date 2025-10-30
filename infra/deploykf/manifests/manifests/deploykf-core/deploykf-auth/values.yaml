@@ -138,7 +138,7 @@ dex:
 
   ## dex connectors
   ##
-  connectors: []
+  connectors: [{"config":{"clientID":"dex-client-deploykf@deploykf-auth","clientSecret":{"existingSecret":"dex-client-deploykf","existingSecretKey":"clientSecret"},"insecureSkipEmailVerified":true,"issuer":"https://dex.cloudnative.space","redirectURI":"https://deploykf.cloudnative.space/dex/callback","scopes":["openid","email","profile","offline_access"]},"id":"deckhouse-dex","name":"Deckhouse Dex","type":"oidc"}]
 
 
 ########################################

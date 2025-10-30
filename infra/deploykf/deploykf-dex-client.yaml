@@ -1,0 +1,8 @@
+apiVersion: deckhouse.io/v1
+kind: DexClient
+metadata:
+  name: deploykf
+  namespace: deploykf-auth # Namespace where deploykf's internal Dex is running
+spec:
+  redirectURIs:
+    - https://deploykf.cloudnative.space/dex/callback

@@ -181,7 +181,23 @@ deploykf_core:
       ##    from a YAML-formatted string in a kubernetes secret
       ##  - in most cases `config.redirectURI` will be set to "https://{DEPLOYKF_HOST}/dex/callback" (if port is 443)
       ##
-      connectors: []
+      connectors:
+        - type: oidc
+          id: deckhouse-dex
+          name: Deckhouse Dex
+          config:
+            issuer: https://dex.cloudnative.space
+            clientID: "dex-client-deploykf@deploykf-auth"
+            clientSecret:
+              existingSecret: "dex-client-deploykf"
+              existingSecretKey: "clientSecret"
+            redirectURI: https://deploykf.cloudnative.space/dex/callback
+            scopes:
+              - openid
+              - email
+              - profile
+              - offline_access
+            insecureSkipEmailVerified: true
 
       ## dex OpenID Connect clients
       ##
