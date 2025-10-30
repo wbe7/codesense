@@ -8,7 +8,6 @@ resources:
   ## deploykf-dependencies ##
   ###########################
   - deploykf-dependencies/istio.yaml
-  - deploykf-dependencies/kyverno.yaml
 
   ###################
   ## deploykf-core ##

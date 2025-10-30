@@ -101,7 +101,7 @@ deploykf_dependencies:
   ##                kyverno
   ## --------------------------------------
   kyverno:
-    enabled: true
+    enabled: false
     namespace: kyverno
     valuesOverrides: |
       kyverno:
@@ -112,6 +112,7 @@ deploykf_dependencies:
             clusterAdmissionReports:
               image:
                 repository: "docker.io/bitnamilegacy/kubectl"
+    # TODO
     # clusterPolicies:
     #   excludeNamespaces:
     #      - "argocd"
