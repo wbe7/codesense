@@ -2,14 +2,14 @@
 ## DEBUG INFO
 ##
 ## PROFILE: team-1
-##  - objectStoreAuth_existingSecret: cloned--pipelines-object-store-auth
+##  - objectStoreAuth_existingSecret: deploykf-s3-credentials
 ##  - objectStoreAuth_existingSecretAccessKeyKey: access_key
 ##  - objectStoreAuth_existingSecretNamespace: kubeflow
 ##  - objectStoreAuth_existingSecretSecretKeyKey: secret_key
 ##  - objectStoreAuth_fromEnv: false
 ##
 ## PROFILE: team-1-prod
-##  - objectStoreAuth_existingSecret: cloned--pipelines-object-store-auth
+##  - objectStoreAuth_existingSecret: deploykf-s3-credentials
 ##  - objectStoreAuth_existingSecretAccessKeyKey: access_key
 ##  - objectStoreAuth_existingSecretNamespace: kubeflow
 ##  - objectStoreAuth_existingSecretSecretKeyKey: secret_key
@@ -46,7 +46,7 @@ spec:
         synchronize: true
         clone:
           namespace: "kubeflow"
-          name: "cloned--pipelines-object-store-auth"
+          name: "deploykf-s3-credentials"
 
     ## annotate the ~cloned~ secret so that ArgoCD ignores it
     - name: annotate-cloned-secret
@@ -81,7 +81,7 @@ spec:
               kinds:
                 - Secret
               names:
-                - "cloned--pipelines-object-store-auth"
+                - "deploykf-s3-credentials"
               namespaces:
                 - "kubeflow"
               operations:
@@ -142,7 +142,7 @@ spec:
         synchronize: true
         clone:
           namespace: "kubeflow"
-          name: "cloned--pipelines-object-store-auth"
+          name: "deploykf-s3-credentials"
 
     ## annotate the ~cloned~ secret so that ArgoCD ignores it
     - name: annotate-cloned-secret
@@ -177,7 +177,7 @@ spec:
               kinds:
                 - Secret
               names:
-                - "cloned--pipelines-object-store-auth"
+                - "deploykf-s3-credentials"
               namespaces:
                 - "kubeflow"
               operations:
