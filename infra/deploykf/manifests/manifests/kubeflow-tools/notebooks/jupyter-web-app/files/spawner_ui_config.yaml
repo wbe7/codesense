@@ -21,8 +21,8 @@ spawnerFormDefaults:
       vendor: ""
       vendors:
         - default: true
-          limit: nvidia.com/gpu
-          name: NVIDIA
+          limitsKey: nvidia.com/gpu
+          uiName: NVIDIA
   hideRegistry: true
   hideTag: false
   image:

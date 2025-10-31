@@ -540,8 +540,8 @@ kubeflow_tools:
       gpus:
         value:
           vendors:
-            - name: NVIDIA
-              limit: nvidia.com/gpu
+            - uiName: NVIDIA
+              limitsKey: nvidia.com/gpu
               default: true
       tolerations:
         value:
