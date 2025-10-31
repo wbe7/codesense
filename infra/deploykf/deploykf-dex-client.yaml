@@ -5,4 +5,4 @@ metadata:
   namespace: deploykf-auth # Namespace where deploykf's internal Dex is running
 spec:
   redirectURIs:
-    - https://deploykf.cloudnative.space/dex/callback
+    - https://deploykf.cloudnative.space:8443/dex/callback
