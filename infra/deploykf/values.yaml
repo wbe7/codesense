@@ -406,6 +406,10 @@ deploykf_core:
     profiles:
      - name: team-1
        members:
+         - group: team-1--admins
+           access:
+             role: edit
+             notebooksAccess: true
          - group: team-1--users
            access:
              role: edit

@@ -4,8 +4,8 @@
 deployKF_helpers:
   deploykf_profiles:
     users_id_mapping: {"admin-user":{"email":"admin@skeaper.tech","id":"admin-user"}}
-    profiles_users_access_mapping: {"team-1":{},"team-1-prod":{"admin-user":{"notebooksAccess":true,"role":"edit"}}}
-    users_profiles_access_mapping: {"admin-user":{"team-1-prod":{"notebooksAccess":true,"role":"edit"}}}
+    profiles_users_access_mapping: {"team-1":{"admin-user":{"notebooksAccess":true,"role":"edit"}},"team-1-prod":{"admin-user":{"notebooksAccess":true,"role":"edit"}}}
+    users_profiles_access_mapping: {"admin-user":{"team-1":{"notebooksAccess":true,"role":"edit"},"team-1-prod":{"notebooksAccess":true,"role":"edit"}}}
 
   kubeflow:
     pipelines:
@@ -93,4 +93,4 @@ groups: [{"id":"team-1--admins","users":["admin-user"]},{"id":"team-1--users","u
 ## profile definitions
 ##  - a list of profile definitions to be generated
 ##
-profiles: [{"members":[{"access":{"notebooksAccess":true,"role":"edit"},"group":"team-1--users"}],"name":"team-1"},{"members":[{"access":{"notebooksAccess":true,"role":"edit"},"group":"team-1--admins"},{"access":{"notebooksAccess":false,"role":"view"},"group":"team-1--users"}],"name":"team-1-prod"}]
+profiles: [{"members":[{"access":{"notebooksAccess":true,"role":"edit"},"group":"team-1--admins"},{"access":{"notebooksAccess":true,"role":"edit"},"group":"team-1--users"}],"name":"team-1"},{"members":[{"access":{"notebooksAccess":true,"role":"edit"},"group":"team-1--admins"},{"access":{"notebooksAccess":false,"role":"view"},"group":"team-1--users"}],"name":"team-1-prod"}]
