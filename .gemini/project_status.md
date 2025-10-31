@@ -1,10 +1,10 @@
 # CIA Project Status
 
-**Last Completed Step:** Этап 1.1: Подготовка GPU-ноды в K8s и установка NVIDIA GPU Operator
+**Last Completed Step:** Этап 1.2.1: Развертывание Kubeflow
 
-**Current Step:** Этап 1.2.1: Развертывание Kubeflow
+**Current Step:** Этап 1.2.2: Развертывание Qdrant
 
-**Next Step:** Этап 1.2.2: Развертывание Qdrant
+**Next Step:** Этап 1.3: Развертывание Langfuse
 
 ---
 
