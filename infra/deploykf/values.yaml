@@ -347,7 +347,7 @@ deploykf_core:
           ##  - override these defaults for a specific profile by setting `tools.kubeflowPipelines.objectStoreAuth` in that profile
           ##
           objectStoreAuth:
-            existingSecret: "kubeflow-pipelines--profile-object-store-auth--{profile_name}"
+            existingSecret: "cloned--pipelines-object-store-auth"
             existingSecretNamespace: ""
             existingSecretAccessKeyKey: "access_key"
             existingSecretSecretKeyKey: "secret_key"

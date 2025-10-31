@@ -89,3 +89,18 @@
         - User enabled `enableCAInjector: true` in Deckhouse `cert-manager` module configuration.
         - Deleted and recreated the `MutatingWebhookConfiguration` `admission-webhook-mutating-webhook-configuration` to force `cert-manager-cainjector` to inject the `caBundle`.
         - Verified `caBundle` injection and pod status.
+
+### Deckhouse Dex Integration (Completed 2025-10-31)
+
+- **Integration Strategy:** Configured `deploykf`'s internal Dex to use the existing Deckhouse Dex as an external OIDC provider.
+- **`DexClient` Creation:** Created a `DexClient` resource for `deploykf` in the `deploykf-auth` namespace. This generated a `clientID` (`dex-client-deploykf@deploykf-auth`) and a `clientSecret`.
+- **OIDC Connector Configuration:**
+    - The OIDC connector configuration was stored in a Kubernetes Secret (`deploykf-dex-connector-config`) to avoid hardcoding secrets in `values.yaml`.
+    - `values.yaml` was updated to reference this secret using `configExistingSecret` and `configExistingSecretKey`.
+    - `issuer` URL was set to `https://dex.cloudnative.space/` (with a trailing slash).
+    - `redirectURI` was set to `https://deploykf.cloudnative.space:8443/dex/callback`.
+- **User Authorization:**
+    - Defined the user `admin@skeaper.tech` in the `users` section of `values.yaml`.
+    - Created `team-1--admins` and `team-1--users` groups.
+    - Assigned the user to the `team-1--admins` group.
+    - Configured `team-1` and `team-1-prod` profiles to grant `edit` and `view` access to the respective groups.

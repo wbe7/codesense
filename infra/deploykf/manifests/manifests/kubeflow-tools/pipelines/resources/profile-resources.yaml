@@ -2,14 +2,14 @@
 ## DEBUG INFO
 ##
 ## PROFILE: team-1
-##  - objectStoreAuth_existingSecret: kubeflow-pipelines--profile-object-store-auth--team-1
+##  - objectStoreAuth_existingSecret: cloned--pipelines-object-store-auth
 ##  - objectStoreAuth_existingSecretAccessKeyKey: access_key
 ##  - objectStoreAuth_existingSecretNamespace: kubeflow
 ##  - objectStoreAuth_existingSecretSecretKeyKey: secret_key
 ##  - objectStoreAuth_fromEnv: false
 ##
 ## PROFILE: team-1-prod
-##  - objectStoreAuth_existingSecret: kubeflow-pipelines--profile-object-store-auth--team-1-prod
+##  - objectStoreAuth_existingSecret: cloned--pipelines-object-store-auth
 ##  - objectStoreAuth_existingSecretAccessKeyKey: access_key
 ##  - objectStoreAuth_existingSecretNamespace: kubeflow
 ##  - objectStoreAuth_existingSecretSecretKeyKey: secret_key
@@ -46,7 +46,7 @@ spec:
         synchronize: true
         clone:
           namespace: "kubeflow"
-          name: "kubeflow-pipelines--profile-object-store-auth--team-1"
+          name: "cloned--pipelines-object-store-auth"
 
     ## annotate the ~cloned~ secret so that ArgoCD ignores it
     - name: annotate-cloned-secret
@@ -81,7 +81,7 @@ spec:
               kinds:
                 - Secret
               names:
-                - "kubeflow-pipelines--profile-object-store-auth--team-1"
+                - "cloned--pipelines-object-store-auth"
               namespaces:
                 - "kubeflow"
               operations:
@@ -142,7 +142,7 @@ spec:
         synchronize: true
         clone:
           namespace: "kubeflow"
-          name: "kubeflow-pipelines--profile-object-store-auth--team-1-prod"
+          name: "cloned--pipelines-object-store-auth"
 
     ## annotate the ~cloned~ secret so that ArgoCD ignores it
     - name: annotate-cloned-secret
@@ -177,7 +177,7 @@ spec:
               kinds:
                 - Secret
               names:
-                - "kubeflow-pipelines--profile-object-store-auth--team-1-prod"
+                - "cloned--pipelines-object-store-auth"
               namespaces:
                 - "kubeflow"
               operations:
