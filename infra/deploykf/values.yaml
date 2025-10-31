@@ -358,9 +358,9 @@ deploykf_core:
     ##     - `id`: a unique identifier for the user
     ##     - `email`: the email of the user (must exactly match the email from your identity provider)
     ##
-    #users:
-    #  - id: user-1
-    #    email: "user1@example.com"
+    users:
+     - id: admin-user 
+       email: "admin@skeaper.tech"
     #  - id: user-2
     #    email: "user2@example.com"
 
@@ -370,9 +370,13 @@ deploykf_core:
     ##     - `id`: a unique identifier for the group
     ##     - `users`: a list of user IDs that are members of the group
     ##
-    #groups:
-    #  - id: team-1
-    #    users:
+    groups:
+     - id: team-1--admins
+       users:
+         - admin-user
+
+     - id: team-1--users
+       users: []
     #      - user-1
     #      - user-2
 
@@ -399,20 +403,25 @@ deploykf_core:
     ##                 - `existingSecretAccessKeyKey`: the key within the secret that contains the access-key (default: "access_key")
     ##                 - `existingSecretSecretKeyKey`: the key within the secret that contains the secret-key (default: "secret_key")
     ##
-    #profiles:
-    #  - name: team-1
-    #    members:
-    #      - group: team-1
-    #        access:
-    #          role: edit
-    #          notebooksAccess: true
-    #
-    #  - name: team-1-prod
-    #    members:
-    #      - group: team-1
-    #        access:
-    #          role: view
-    #          notebooksAccess: false
+    profiles:
+     - name: team-1
+       members:
+         - group: team-1--users
+           access:
+             role: edit
+             notebooksAccess: true
+    
+     - name: team-1-prod
+       members:
+         - group: team-1--admins
+           access:
+             role: edit
+             notebooksAccess: true
+
+         - group: team-1--users
+           access:
+             role: view
+             notebooksAccess: false
 
 
 ## --------------------------------------------------------------------------------
