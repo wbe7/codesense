@@ -19,7 +19,10 @@ spawnerFormDefaults:
     value:
       num: none
       vendor: ""
-      vendors: []
+      vendors:
+        - default: true
+          limit: nvidia.com/gpu
+          name: NVIDIA
   hideRegistry: true
   hideTag: false
   image:
@@ -52,6 +55,11 @@ spawnerFormDefaults:
     options: []
     readOnly: false
     value: ""
+  tolerations:
+    value:
+      - effect: NoSchedule
+        key: nvidia.com/gpu
+        operator: Exists
   workspaceVolume:
     readOnly: false
     value:

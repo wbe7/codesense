@@ -536,7 +536,18 @@ kubeflow_tools:
     ## notebook spawner configs
     ##  - these configs directly become the `spawner_ui_config.yaml` in the jupyter-web-app
     ##
-    spawnerFormDefaults: {}
+    spawnerFormDefaults:
+      gpus:
+        value:
+          vendors:
+            - name: NVIDIA
+              limit: nvidia.com/gpu
+              default: true
+      tolerations:
+        value:
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
 
 
   ## --------------------------------------
