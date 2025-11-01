@@ -1,0 +1,79 @@
+replicaCount: 3
+
+apiKey: true
+readOnlyApiKey: true
+
+config:
+  cluster:
+    enabled: true
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: cloudflare
+  hosts:
+    - host: qdrant.cloudnative.space
+      paths:
+        - path: /
+          pathType: Prefix
+          servicePort: 6333
+  tls:
+    - secretName: qdrant-cloudnative-space-tls
+      hosts:
+        - qdrant.cloudnative.space
+
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+              - qdrant
+          - key: app.kubernetes.io/instance
+            operator: In
+            values:
+              - qdrant
+      topologyKey: "kubernetes.io/hostname"
+
+persistence:
+  size: 20Gi
+  storageClassName: freenas-nfs-csi
+
+snapshotPersistence:
+  enabled: true
+  size: 20Gi
+  storageClassName: freenas-nfs-csi
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
+    memory: 4Gi
+
+livenessProbe:
+  enabled: true
+
+readinessProbe:
+  enabled: true
+
+startupProbe:
+  enabled: true
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+metrics:
+  serviceMonitor:
+    enabled: false
+    additionalLabels:
+      prometheus: main
+
+service:
+  additionalLabels:
+    app.kubernetes.io/component: cluster-discovery

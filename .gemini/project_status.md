@@ -1,10 +1,10 @@
 # CIA Project Status
 
-**Last Completed Step:** Этап 1.2.1: Развертывание Kubeflow
+**Last Completed Step:** Этап 1.2.2: Развертывание Qdrant
 
-**Current Step:** Этап 1.2.2: Развертывание Qdrant
+**Current Step:** Этап 1.2.3: Развертывание Langfuse
 
-**Next Step:** Этап 1.3: Развертывание Langfuse
+**Next Step:** Этап 1.3: Код как датасет
 
 ---
 
@@ -17,6 +17,20 @@
 ---
 
 ## 📝 Project Artifacts & Notes
+
+### Qdrant Deployment Validation (Completed 2025-11-01)
+
+- **Validation:** Successfully tested the Qdrant deployment by running the test scripts in `infra/qdrant/test`.
+- **Scripts:** `insert_data.py`, `search_data.py`, and `cleanup_data.py` all executed without errors.
+- **Confirmation:** This confirms that the Qdrant cluster is operational and accessible via its ingress.
+
+### Qdrant Deployment (Completed 2025-11-01)
+
+- **Deployment:** Deployed Qdrant cluster using the official Helm chart.
+- **Namespace:** `qdrant`
+- **Ingress:** `qdrant.cloudnative.space` secured with a Cloudflare certificate via cert-manager.
+- **Storage:** `freenas-nfs-csi` used for persistence.
+- **Configuration:** Stored in `infra/qdrant/values.yaml`.
 
 ### Hardware & Model Strategy (Agreed on 2025-10-25)
 

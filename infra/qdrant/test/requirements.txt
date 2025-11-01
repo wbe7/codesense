@@ -1,0 +1,7 @@
+langchain-qdrant
+langchain-community
+langchain-huggingface
+python-dotenv
+qdrant-client
+langchain
+langchain-text-splitters
