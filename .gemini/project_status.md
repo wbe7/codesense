@@ -1,10 +1,10 @@
 # CIA Project Status
 
-**Last Completed Step:** Этап 1.2.2: Развертывание Qdrant
+**Last Completed Step:** Этап 1.2.3: Развертывание Langfuse
 
-**Current Step:** Этап 1.2.3: Развертывание Langfuse
+**Current Step:** Этап 1.3: Код как датасет
 
-**Next Step:** Этап 1.3: Код как датасет
+**Next Step:** Этап 1.4: DVC-версионирование
 
 ---
 
@@ -17,6 +17,16 @@
 ---
 
 ## 📝 Project Artifacts & Notes
+
+### Langfuse Deployment (Completed 2025-11-01)
+
+- **Deployment:** Deployed Langfuse using the official Helm chart.
+- **Namespace:** `langfuse`
+- **Ingress:** `langfuse.cloudnative.space` secured with a Cloudflare certificate via cert-manager.
+- **SSO:** Configured with Deckhouse Dex as a custom OIDC provider. The `OAuthCallbackError: state mismatch` was resolved by setting `AUTH_CUSTOM_CHECKS: "state"` in the `values.yaml`.
+- **Storage:** External S3 bucket `langfuse` on `192.168.77.7:9000`.
+- **Persistence:** `freenas-nfs-csi` used for PostgreSQL, ClickHouse, and Redis.
+- **Configuration:** Stored in `infra/langfuse/values.yaml`.
 
 ### Qdrant Deployment Validation (Completed 2025-11-01)
 

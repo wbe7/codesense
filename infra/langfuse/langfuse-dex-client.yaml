@@ -5,4 +5,4 @@ metadata:
   namespace: langfuse
 spec:
   redirectURIs:
-    - https://langfuse.cloudnative.space/api/auth/callback/oidc
+    - https://langfuse.cloudnative.space/api/auth/callback/custom
