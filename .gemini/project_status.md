@@ -104,3 +104,8 @@
     - Created `team-1--admins` and `team-1--users` groups.
     - Assigned the user to the `team-1--admins` group.
     - Configured `team-1` and `team-1-prod` profiles to grant `edit` and `view` access to the respective groups.
+
+### Kubeflow Notebook Images (Discovered 2025-10-31)
+
+- **Best Practice:** To avoid dependency issues (e.g., with NumPy, CUDA drivers), always use the pre-built, specialized Docker images provided by Kubeflow when creating Jupyter notebooks.
+- **Example:** For GPU-accelerated TensorFlow, select an image like `kubeflownotebookswg/jupyter-tensorflow-cuda-full:v1.8.0`. This ensures that the framework, drivers, and all necessary libraries are correctly installed and configured out-of-the-box, eliminating the need for manual `pip install` commands or environment variable adjustments.
