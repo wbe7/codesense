@@ -1,0 +1,6 @@
+outs:
+- md5: c08b75b0843b49b4ed594290752171f5.dir
+  size: 35163741
+  nfiles: 2893
+  hash: md5
+  path: langchain

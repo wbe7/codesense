@@ -1,0 +1,6 @@
+repositories:
+  - https://github.com/google-gemini/gemini-cli.git
+  - https://github.com/langchain-ai/langchain.git
+  - https://github.com/pytorch/pytorch.git
+  - https://github.com/huggingface/transformers.git
+  - https://github.com/vllm-project/vllm.git
