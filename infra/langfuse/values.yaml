@@ -1,63 +1,96 @@
-# Langfuse Helm Chart values overrides
-s3:
-  deploy: false
-  storageProvider: "s3"
-  bucket: "langfuse"
-  region: "us-east-1"
-  endpoint: "http://192.168.77.7:9000"
-  forcePathStyle: true
-  accessKeyId:
-    secretKeyRef:
-      name: langfuse-s3-credentials
-      key: accessKeyId
-  secretAccessKey:
-    secretKeyRef:
-      name: langfuse-s3-credentials
-      key: secretAccessKey
-
-л 
-  ingress:
+clickhouse:
+  auth:
+    existingSecret: langfuse-secrets
+    existingSecretKey: clickhouse-password
+  persistence:
     enabled: true
-    className: "nginx"
+    size: 30Gi
+    storageClass: freenas-nfs-csi
+
+langfuse:
+  additionalEnv:
+  - name: AUTH_CUSTOM_CLIENT_ID
+    valueFrom:
+      secretKeyRef:
+        key: clientId
+        name: langfuse-oidc-credentials
+  - name: AUTH_CUSTOM_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        key: clientSecret
+        name: langfuse-oidc-credentials
+  - name: AUTH_CUSTOM_ISSUER
+    value: https://dex.cloudnative.space
+  - name: AUTH_CUSTOM_NAME
+    value: Dex
+  - name: AUTH_DISABLE_USERNAME_PASSWORD
+    value: "true"
+  - name: AUTH_CUSTOM_CHECKS
+    value: state
+  encryptionKey:
+    secretKeyRef:
+      key: encryptionKey
+      name: langfuse-secrets
+
+  ingress:
     annotations:
-      cert-manager.io/cluster-issuer: "cloudflare"
+      cert-manager.io/cluster-issuer: cloudflare
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    className: nginx
+    enabled: true
     hosts:
-      - host: langfuse.cloudnative.space
-        paths:
-          - path: /
-            pathType: Prefix
+    - host: langfuse.cloudnative.space
+      paths:
+      - path: /
+        pathType: Prefix
     tls:
       enabled: true
       secretName: langfuse-cloudnative-space-tls
 
+  nextauth:
+    secret:
+      secretKeyRef:
+        key: nextauthSecret
+        name: langfuse-secrets
+    url: https://langfuse.cloudnative.space
+  salt:
+    secretKeyRef:
+      key: salt
+      name: langfuse-secrets
+
 postgresql:
   auth:
-    existingSecret: "langfuse-secrets"
+    existingSecret: langfuse-secrets
     secretKeys:
-      userPasswordKey: "postgres-password"
+      userPasswordKey: postgres-password
   primary:
     persistence:
       enabled: true
-      size: "10Gi"
-      storageClass: "freenas-nfs-csi"
-
-clickhouse:
-  auth:
-    existingSecret: "langfuse-secrets"
-    existingSecretKey: "clickhouse-password"
-  persistence:
-    enabled: true
-    size: "30Gi"
-    storageClass: "freenas-nfs-csi"
+      size: 10Gi
+      storageClass: freenas-nfs-csi
 
 redis:
   auth:
-    existingSecret: "langfuse-secrets"
-    existingSecretPasswordKey: "redis-password"
+    existingSecret: langfuse-secrets
+    existingSecretPasswordKey: redis-password
   primary:
     persistence:
       enabled: true
-      size: "5Gi"
-      storageClass: "freenas-nfs-csi"
+      size: 5Gi
+      storageClass: freenas-nfs-csi
 
+s3:
+  accessKeyId:
+    secretKeyRef:
+      key: accessKeyId
+      name: langfuse-s3-credentials
+  bucket: langfuse
+  deploy: false
+  endpoint: http://192.168.77.7:9000
+  forcePathStyle: true
+  region: us-east-1
+  secretAccessKey:
+    secretKeyRef:
+      key: secretAccessKey
+      name: langfuse-s3-credentials
+  storageProvider: s3
