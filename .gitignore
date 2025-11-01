@@ -1,3 +1,5 @@
 .gemini/tmp
 examples/
 infra/secrets
+.venv/
+.dvc/config.local
