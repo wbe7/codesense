@@ -1,0 +1,94 @@
+# Langfuse Helm Chart values overrides
+s3:
+  deploy: false
+  storageProvider: "s3"
+  bucket: "langfuse"
+  region: "us-east-1"
+  endpoint: "http://192.168.77.7:9000"
+  forcePathStyle: true
+  accessKeyId:
+    secretKeyRef:
+      name: langfuse-s3-credentials
+      key: accessKeyId
+  secretAccessKey:
+    secretKeyRef:
+      name: langfuse-s3-credentials
+      key: secretAccessKey
+
+langfuse:
+  salt:
+    secretKeyRef:
+      name: langfuse-secrets
+      key: salt
+  encryptionKey:
+    secretKeyRef:
+      name: langfuse-secrets
+      key: encryptionKey
+  additionalEnv:
+    - name: AUTH_PROVIDER
+      value: "oidc"
+    - name: AUTH_OIDC_CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          name: langfuse-oidc-credentials
+          key: clientId
+    - name: AUTH_OIDC_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: langfuse-oidc-credentials
+          key: clientSecret
+    - name: AUTH_OIDC_ISSUER
+      value: "https://dex.cloudnative.space"
+    - name: AUTH_DISABLE_USERNAME_PASSWORD
+      value: "true"
+  nextauth:
+    url: https://langfuse.cloudnative.space
+    secret:
+      secretKeyRef:
+        name: langfuse-secrets
+        key: nextauthSecret
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      cert-manager.io/cluster-issuer: "cloudflare"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - host: langfuse.cloudnative.space
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      enabled: true
+      secretName: langfuse-cloudnative-space-tls
+
+postgresql:
+  auth:
+    existingSecret: "langfuse-secrets"
+    secretKeys:
+      userPasswordKey: "postgres-password"
+  primary:
+    persistence:
+      enabled: true
+      size: "10Gi"
+      storageClass: "freenas-nfs-csi"
+
+clickhouse:
+  auth:
+    existingSecret: "langfuse-secrets"
+    existingSecretKey: "clickhouse-password"
+  persistence:
+    enabled: true
+    size: "30Gi"
+    storageClass: "freenas-nfs-csi"
+
+redis:
+  auth:
+    existingSecret: "langfuse-secrets"
+    existingSecretPasswordKey: "redis-password"
+  primary:
+    persistence:
+      enabled: true
+      size: "5Gi"
+      storageClass: "freenas-nfs-csi"
+

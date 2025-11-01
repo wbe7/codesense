@@ -1,0 +1,171 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: langfuse-repair-pod
+  namespace: langfuse
+spec:
+  containers:
+  - name: langfuse-web
+    image: langfuse/langfuse:3.120.0
+    command: ["sleep", "infinity"]
+    env:
+    - name: NODE_ENV
+      value: production
+    - name: LANGFUSE_LOG_LEVEL
+      value: info
+    - name: LANGFUSE_LOG_FORMAT
+      value: text
+    - name: SALT
+      valueFrom:
+        secretKeyRef:
+          key: salt
+          name: langfuse-secrets
+    - name: ENCRYPTION_KEY
+      valueFrom:
+        secretKeyRef:
+          key: encryptionKey
+          name: langfuse-secrets
+    - name: TELEMETRY_ENABLED
+      value: "true"
+    - name: AUTH_DISABLE_SIGNUP
+      value: "false"
+    - name: ENABLE_EXPERIMENTAL_FEATURES
+      value: "false"
+    - name: NEXTAUTH_URL
+      value: https://langfuse.cloudnative.space
+    - name: NEXTAUTH_SECRET
+      valueFrom:
+        secretKeyRef:
+          key: nextauthSecret
+          name: langfuse-secrets
+    - name: DATABASE_HOST
+      value: langfuse-postgresql
+    - name: DATABASE_USERNAME
+      value: postgres
+    - name: DATABASE_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: postgres-password
+          name: langfuse-secrets
+    - name: DATABASE_NAME
+      value: postgres_langfuse
+    - name: DATABASE_URL
+      value: postgresql://postgres:$(DATABASE_PASSWORD)@langfuse-postgresql:5432/postgres_langfuse?schema=public
+    - name: DIRECT_URL
+      value: postgresql://postgres:$(DATABASE_PASSWORD)@langfuse-postgresql:5432/postgres_langfuse?schema=public
+    - name: LANGFUSE_AUTO_POSTGRES_MIGRATION_DISABLED
+      value: "false"
+    - name: REDIS_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: redis-password
+          name: langfuse-secrets
+    - name: REDIS_TLS_ENABLED
+      value: "false"
+    - name: REDIS_CONNECTION_STRING
+      value: redis://default:$(REDIS_PASSWORD)@langfuse-redis-primary:6379/0
+    - name: CLICKHOUSE_MIGRATION_URL
+      value: clickhouse://langfuse-clickhouse:9000
+    - name: CLICKHOUSE_MIGRATION_SSL
+      value: "false"
+    - name: CLICKHOUSE_URL
+      value: http://langfuse-clickhouse:8123
+    - name: CLICKHOUSE_USER
+      value: default
+    - name: CLICKHOUSE_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: clickhouse-password
+          name: langfuse-secrets
+    - name: CLICKHOUSE_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: clickhouse-password
+          name: langfuse-secrets
+    - name: LANGFUSE_AUTO_CLICKHOUSE_MIGRATION_DISABLED
+      value: "false"
+    - name: LANGFUSE_S3_EVENT_UPLOAD_BUCKET
+      value: langfuse
+    - name: LANGFUSE_S3_EVENT_UPLOAD_REGION
+      value: us-east-1
+    - name: LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT
+      value: http://192.168.77.7:9000
+    - name: LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          key: accessKeyId
+          name: langfuse-s3-credentials
+    - name: LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          key: secretAccessKey
+          name: langfuse-s3-credentials
+    - name: LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE
+      value: "true"
+    - name: LANGFUSE_S3_BATCH_EXPORT_ENABLED
+      value: "true"
+    - name: LANGFUSE_S3_BATCH_EXPORT_BUCKET
+      value: langfuse
+    - name: LANGFUSE_S3_BATCH_EXPORT_REGION
+      value: us-east-1
+    - name: LANGFUSE_S3_BATCH_EXPORT_ENDPOINT
+      value: http://192.168.77.7:9000
+    - name: LANGFUSE_S3_BATCH_EXPORT_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          key: accessKeyId
+          name: langfuse-s3-credentials
+    - name: LANGFUSE_S3_BATCH_EXPORT_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          key: secretAccessKey
+          name: langfuse-s3-credentials
+    - name: LANGFUSE_S3_BATCH_EXPORT_FORCE_PATH_STYLE
+      value: "true"
+    - name: LANGFUSE_S3_MEDIA_UPLOAD_BUCKET
+      value: langfuse
+    - name: LANGFUSE_S3_MEDIA_UPLOAD_REGION
+      value: us-east-1
+    - name: LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT
+      value: http://192.168.77.7:9000
+    - name: LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          key: accessKeyId
+          name: langfuse-s3-credentials
+    - name: LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          key: secretAccessKey
+          name: langfuse-s3-credentials
+    - name: LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE
+      value: "true"
+    - name: LANGFUSE_S3_MEDIA_UPLOAD_MAX_CONTENT_LENGTH
+      value: "1e+09"
+    - name: LANGFUSE_S3_MEDIA_UPLOAD_DOWNLOAD_URL_EXPIRY_SECONDS
+      value: "3600"
+    - name: LANGFUSE_S3_CONCURRENT_READS
+      value: "50"
+    - name: LANGFUSE_S3_CONCURRENT_WRITES
+      value: "50"
+    - name: PORT
+      value: "3000"
+    - name: HOSTNAME
+      value: 0.0.0.0
+    - name: AUTH_PROVIDER
+      value: oidc
+    - name: AUTH_OIDC_CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          key: clientId
+          name: langfuse-oidc-credentials
+    - name: AUTH_OIDC_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          key: clientSecret
+          name: langfuse-oidc-credentials
+    - name: AUTH_OIDC_ISSUER
+      value: https://dex.cloudnative.space
+    - name: AUTH_DISABLE_USERNAME_PASSWORD
+      value: "true"
+  serviceAccountName: langfuse

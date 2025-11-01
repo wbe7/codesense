@@ -1,0 +1,8 @@
+apiVersion: deckhouse.io/v1
+kind: DexClient
+metadata:
+  name: langfuse
+  namespace: langfuse
+spec:
+  redirectURIs:
+    - https://langfuse.cloudnative.space/api/auth/callback/oidc
