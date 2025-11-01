@@ -101,9 +101,8 @@ def main():
             raise
 
     # 6. Push DVC cache to remote (optional, but good practice)
-    # This part will be uncommented and configured once S3 remote is set up
-    # print("Pushing DVC cache to remote...")
-    # run_command(["dvc", "push"])
+    print("Pushing DVC cache to remote...")
+    run_command(["dvc", "push"])
 
 if __name__ == "__main__":
     main()
