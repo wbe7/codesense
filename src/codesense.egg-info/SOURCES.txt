@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+src/codesense.egg-info/PKG-INFO
+src/codesense.egg-info/SOURCES.txt
+src/codesense.egg-info/dependency_links.txt
+src/codesense.egg-info/top_level.txt
+src/codesense/utils/url_parser.py
