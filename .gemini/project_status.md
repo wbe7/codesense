@@ -18,6 +18,13 @@
 
 ## 📝 Project Artifacts & Notes
 
+### Project Structure and Data Pipeline Refactoring (Completed 2025-11-02)
+
+- **New Structure:** The project has been reorganized to align with Python development and MLOps best practices. Key directories `src` (for package source code), `data` (for DVC-managed data), and `scripts` (for utility tools) have been created.
+- **`codesense.yaml`:** The `codebases.yaml` configuration file was moved to the project root and renamed to `codesense.yaml`, establishing it as the single source of truth for the dataset's composition.
+- **Idempotent Script:** The `repositories-converge.py` script was completely reworked. It now resides in the `scripts/` directory, uses a shared `url_parser` utility, ensures idempotency (handles reruns correctly), and manages the entire `data/raw` dataset via a single `.dvc` file.
+- **Python Package:** The project is now an installable Python package, configured via `pyproject.toml`. This resolves import issues and establishes a robust foundation for dependency management.
+
 ### Codebase Dataset Management (Completed 2025-11-02)
 
 - **DVC S3 Remote:** Configured DVC to use an S3-compatible remote at `http://192.168.77.7:9000` in the `dvc/codesense` bucket. Credentials are stored locally in `.dvc/config.local`.
