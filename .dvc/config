@@ -2,4 +2,4 @@
     remote = s3-remote
 ['remote "s3-remote"']
     url = s3://dvc/codesense
-    endpointurl = http://cloudnative.space:9000
+    endpointurl = http://192.168.77.7:9000
