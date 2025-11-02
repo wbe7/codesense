@@ -1,6 +1,6 @@
 outs:
-- md5: d8f63dafd8038c07b8e7e7f7e6aef286.dir
-  size: 12420923
+- md5: e2fb73a155b1ccfd45d32c3b0524ce56.dir
+  size: 12425677
   nfiles: 1184
   hash: md5
   path: gemini-cli

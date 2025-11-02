@@ -92,17 +92,31 @@ def main():
     print("Staging and committing updated .dvc files to Git...")
     run_command(["git", "add", CODEBASES_DIR]) # Add the whole codebases directory to catch all .dvc files
     
+    commit_successful = False
     try:
-        run_command(["git", "commit", "-m", "Update RAG codebases via repositories-converge.py"])
-    except subprocess.CalledProcessError as e:
-        if "nothing to commit" in e.stderr:
-            print("No changes to commit.")
+        commit_result = run_command(["git", "commit", "-m", "Update RAG codebases via repositories-converge.py"], check=False)
+        if commit_result.returncode == 0:
+            print("Git commit successful.")
+            commit_successful = True
+        elif "nothing to commit" in commit_result.stdout or "nothing to commit" in commit_result.stderr:
+            print("No changes to commit to Git.")
         else:
-            raise
+            print(f"Git commit failed with exit code {commit_result.returncode}.")
+            print(f"STDOUT: {commit_result.stdout}")
+            print(f"STDERR: {commit_result.stderr}")
+            raise subprocess.CalledProcessError(commit_result.returncode, commit_result.args, output=commit_result.stdout, stderr=commit_result.stderr)
+    except subprocess.CalledProcessError as e:
+        # This block will catch if check=True was used and it failed, but we are using check=False above.
+        # Keeping it for robustness in case of future changes.
+        print(f"An unexpected error occurred during git commit: {e}")
+        raise
 
-    # 6. Push DVC cache to remote (optional, but good practice)
-    print("Pushing DVC cache to remote...")
-    run_command(["dvc", "push"])
+    # 6. Push DVC cache to remote (only if a commit happened)
+    if commit_successful:
+        print("Pushing DVC cache to remote...")
+        run_command(["dvc", "push"])
+    else:
+        print("Skipping DVC push as no Git commit was made.")
 
 if __name__ == "__main__":
     main()
