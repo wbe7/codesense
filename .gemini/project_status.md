@@ -1,10 +1,10 @@
 # CIA Project Status
 
-**Last Completed Step:** Этап 1.2.3: Развертывание Langfuse
+**Last Completed Step:** Этап 1.4: DVC-версионирование
 
-**Current Step:** Этап 1.3: Код как датасет
+**Current Step:** Этап 2.1: Загрузка и парсинг
 
-**Next Step:** Этап 1.4: DVC-версионирование
+**Next Step:** Этап 2.2: Метаданные
 
 ---
 
@@ -17,6 +17,12 @@
 ---
 
 ## 📝 Project Artifacts & Notes
+
+### Codebase Dataset Management (Completed 2025-11-02)
+
+- **DVC S3 Remote:** Configured DVC to use an S3-compatible remote at `http://192.168.77.7:9000` in the `dvc/codesense` bucket. Credentials are stored locally in `.dvc/config.local`.
+- **`codebases.yaml`:** Created a configuration file at `codebases/codebases.yaml` to define the list of Git repositories to be used as the dataset.
+- **`repositories-converge.py`:** Developed a Python script at `codebases/repositories-converge.py` to automate the process of cloning, DVC-tracking, and pushing the codebases to the S3 remote.
 
 ### Langfuse Deployment (Completed 2025-11-01)
 
