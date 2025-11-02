@@ -72,15 +72,28 @@ def main():
     print("Staging and committing new DVC data to Git...")
     run_command(["git", "add", f"{RAW_DATA_DIR}.dvc", ".gitignore"])
     
+    commit_successful = False
     try:
-        run_command(["git", "commit", "-m", "Update raw codebases dataset"], check=True)
+        # Вызываем с check=False, чтобы обработать случай "nothing to commit"
+        commit_result = run_command(["git", "commit", "-m", "Update raw codebases dataset"], check=False)
+        if commit_result.returncode == 0:
+            print("Git commit successful.")
+            commit_successful = True
+        elif "nothing to commit" in commit_result.stdout or "nothing to commit" in commit_result.stderr:
+            print("No changes to commit to Git.")
+        else:
+            # Если есть другая ошибка коммита, выводим ее и падаем
+            print(f"Git commit failed with exit code {commit_result.returncode}.")
+            raise subprocess.CalledProcessError(commit_result.returncode, commit_result.args, output=commit_result.stdout, stderr=commit_result.stderr)
+    except Exception as e:
+        print(f"An unexpected error occurred during git commit: {e}")
+        raise
+
+    if commit_successful:
         print("Pushing DVC cache to remote...")
         run_command(["dvc", "push"])
-    except subprocess.CalledProcessError as e:
-        if "nothing to commit" in e.stdout or "nothing to commit" in e.stderr:
-            print("No changes to commit to Git. Skipping DVC push.")
-        else:
-            raise
+    else:
+        print("Skipping DVC push as no Git commit was made.")
 
 if __name__ == "__main__":
     main()
