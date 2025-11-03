@@ -1,10 +1,15 @@
 import os
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
 from langchain_core.documents import Document
 
+# Импортируем наши модули
 from codesense.utils.config import get_codebase_config
 from codesense.utils.url_parser import parse_repository_info
+from codesense.processing.embedder import get_embedding_model, generate_embeddings
+
+# Импорты из LangChain
+from langchain_community.document_loaders import DirectoryLoader, TextLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
+
 
 RAW_DATA_DIR = os.path.join("data", "raw")
 
@@ -26,7 +31,6 @@ def _calculate_start_line(full_text: str, chunk_content: str) -> int:
     start_char_index = full_text.find(chunk_content)
     if start_char_index == -1:
         return 1
-    # Считаем количество символов новой строки до начала чанка
     return full_text[:start_char_index].count('\n') + 1
 
 def process_and_chunk_documents():
@@ -74,7 +78,6 @@ def process_and_chunk_documents():
                 
                 text_chunks = splitter.split_text(doc.page_content)
 
-                # Создаем новые документы-чанки с обогащенными метаданными
                 for text_chunk in text_chunks:
                     start_line = _calculate_start_line(doc.page_content, text_chunk)
                     
@@ -96,19 +99,20 @@ def process_and_chunk_documents():
 
 
 if __name__ == '__main__':
-    chunks = process_and_chunk_documents()
+    # 1. Загрузка и разбиение на чанки
+    all_chunks = process_and_chunk_documents()
     
-    if chunks:
-        print("\nПример чанков с правильными метаданными:")
-        
-        # Попробуем найти пример из Python файла
-        py_chunk_example = next((c for c in chunks if c.metadata.get('file_path', '').endswith('.py')), None)
-        
-        # Если не нашли, возьмем любой
-        example_chunk = py_chunk_example if py_chunk_example else chunks[0]
+    if all_chunks:
+        # 2. Берем небольшую выборку для теста
+        sample_chunks = all_chunks[:100]
+        print(f"\nВзято {len(sample_chunks)} чанков для тестовой генерации эмбеддингов.")
 
-        print(f"  - repo_id: {example_chunk.metadata.get('repo_id')}")
-        print(f"    file_path: {example_chunk.metadata.get('file_path')}")
-        print(f"    web_url: {example_chunk.metadata.get('web_url')}")
-        print(f"    start_line: {example_chunk.metadata.get('start_line')}")
-        print(f"    content: '{example_chunk.page_content[:80].strip()}...'")
+        # 3. Инициализируем модель
+        embedding_model = get_embedding_model()
+
+        # 4. Генерируем эмбеддинги для выборки
+        embeddings = generate_embeddings(sample_chunks, embedding_model)
+
+        print(f"\nТестовый прогон завершен. Получено {len(embeddings)} векторов.")
+        if embeddings:
+            print(f"Размерность одного вектора: {len(embeddings[0])}")
