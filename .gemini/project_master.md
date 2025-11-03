@@ -93,7 +93,7 @@ MLOps/LLMOps Pet-Проект
 - **2.2: Обогащение Метаданными**:
     - Создать и использовать утилитарную функцию `parse_repository_info(url)`, которая принимает URL из `codebases.yaml` и возвращает структурированный объект, включающий `id`, `clone_url` и `web_url`.
     - При создании чанков обогащать их метаданными: `repo_id`, `file_path`, `line_start`, `language` и, самое главное, `web_url` (например, `https://github.com/google-gemini/gemini-cli`). Это основа для генерации точных ссылок.
-- **2.3: Эмбеддинги**: Генерировать векторы с помощью **`stella_en_1.5B_v5`** или альтернативы.
+- **2.3: Эмбеддинги**: Генерировать векторы с помощью **`Qwen/Qwen3-Embedding-0.6B`**.
 - **2.4: Индексация в Qdrant**: Написать KFP-компонент `build_code_index`, который индексирует код и его метаданные в Qdrant.
 - **2.5: Baseline RAG с Gemini Pro и Langfuse Prompt Management**:
     - Создать в UI Langfuse версионируемый промпт (например, с именем `rag-code-assistant`).

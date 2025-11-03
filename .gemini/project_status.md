@@ -1,10 +1,10 @@
 # CIA Project Status
 
-**Last Completed Step:** Этап 1.4: DVC-версионирование
+**Last Completed Step:** Этап 2.3: Эмбеддинги
 
-**Current Step:** Этап 2.1: Загрузка и парсинг
+**Current Step:** Этап 2.4: Индексация в Qdrant
 
-**Next Step:** Этап 2.2: Метаданные
+**Next Step:** Этап 2.5: Baseline RAG с Gemini Pro и Langfuse Prompt Management
 
 ---
 
@@ -17,6 +17,14 @@
 ---
 
 ## 📝 Project Artifacts & Notes
+
+### Embedding Pipeline (Completed 2025-11-03)
+
+ - **Success:** The full data processing pipeline is now functional. It correctly loads files from multiple source code repositories, skips binary/unreadable files, performs language-aware chunking, and generates embeddings.
+ - **Model Selection:** After encountering size and compatibility issues with `NovaSearch/stella_en_1.5B_v5`, we collaboratively selected and switched to **`Qwen/Qwen3-Embedding-0.6B`**.   
+ - **Rationale:** This model is a significant improvement as it's smaller (~2.4GB VRAM), explicitly supports programming languages, and is compatible with the latest `transformers` library, resolving all previous blockers.
+ - **Validation:** A test run successfully generated 100 embeddings with a dimensionality of 1024, confirming the pipeline's correctness from end to end.
+
 
 ### Project Structure and Data Pipeline Refactoring (Completed 2025-11-02)
 
