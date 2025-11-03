@@ -9,7 +9,7 @@ from codesense.processing.vector_store import (
 )
 
 
-def run(collection_name: str, batch_size: int = 64):
+def run(collection_name: str, batch_size: int = 64, debug: bool = False):
     """
     Выполняет полный пайплайн индексации:
     1. Загружает и разбивает на чанки документы.
@@ -24,6 +24,11 @@ def run(collection_name: str, batch_size: int = 64):
     if not all_chunks:
         print("Не найдено документов для индексации. Завершение работы.")
         return
+
+    if debug:
+        print("\n*** ЗАПУСК В РЕЖИМЕ ОТЛАДКИ (DEBUG) ***")
+        print("Используются только первые 512 чанков.")
+        all_chunks = all_chunks[:512]
 
     # 2. Инициализация моделей и клиентов
     embedding_model = get_embedding_model()
@@ -69,6 +74,15 @@ if __name__ == "__main__":
         default=64,
         help="Размер батча для обработки и загрузки.",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Запустить в режиме отладки, используя только первые 512 чанков."
+    )
     args = parser.parse_args()
 
-    run(collection_name=args.collection_name, batch_size=args.batch_size)
+    run(
+        collection_name=args.collection_name, 
+        batch_size=args.batch_size, 
+        debug=args.debug
+    )

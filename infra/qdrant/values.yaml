@@ -75,5 +75,6 @@ metrics:
       prometheus: main
 
 service:
+  type: LoadBalancer
   additionalLabels:
     app.kubernetes.io/component: cluster-discovery
