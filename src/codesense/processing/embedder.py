@@ -1,15 +1,20 @@
+import os
+from dotenv import load_dotenv
 from langchain_huggingface import HuggingFaceEmbeddings
 import torch
 
-# Точное имя модели на Hugging Face Hub
-MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B"
+# Загружаем переменные окружения из .env файла (если он есть)
+load_dotenv()
+
+# Получаем имя модели из переменной окружения или используем значение по умолчанию
+MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME", "Qwen/Qwen3-Embedding-0.6B")
 
 def get_embedding_model():
     """
     Инициализирует и возвращает модель для создания эмбеддингов.
     Автоматически выбирает GPU (cuda или mps), если он доступен.
     """
-    print("Инициализация модели эмбеддингов...")
+    print(f"Инициализация модели эмбеддингов: {MODEL_NAME}")
     
     if torch.cuda.is_available():
         device = "cuda"

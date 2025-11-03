@@ -1,4 +1,5 @@
 import os
+import logging
 from langchain_core.documents import Document
 
 # Импортируем наши модули
@@ -32,6 +33,9 @@ def _calculate_start_line(full_text: str, chunk_content: str) -> int:
     if start_char_index == -1:
         return 1
     return full_text[:start_char_index].count('\n') + 1
+
+# Подавляем логгирование предупреждений от DirectoryLoader, чтобы не засорять вывод ошибками о бинарных файлах
+logging.getLogger("langchain_community.document_loaders.directory").setLevel(logging.ERROR)
 
 def process_and_chunk_documents():
     """
