@@ -10,6 +10,7 @@ langchain-qdrant
 
 # Hugging Face ecosystem for embeddings
 langchain-huggingface
+sentence-transformers
 transformers
 torch
 accelerate
