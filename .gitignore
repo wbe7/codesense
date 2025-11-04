@@ -5,3 +5,4 @@ infra/secrets
 .dvc/config.local
 .env
 __pycache__/
+.pip-tools/

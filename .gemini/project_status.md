@@ -18,6 +18,24 @@
 
 ## 📝 Project Artifacts & Notes
 
+### Indexing Pipeline & Qdrant Setup (Completed 2025-11-04)
+
+- **Indexing Module (`src/codesense/pipelines/indexing/run.py`):**
+    - **Functionality:** Orchestrates the end-to-end indexing process: document loading, chunking, embedding, and uploading to Qdrant.
+    - **CLI Parameters:**
+        - `--collection-name` (required): Specifies the target collection in Qdrant.
+        - `--batch-size` (optional, default: 64): Controls the number of chunks processed at once. Crucial for managing GPU VRAM usage. Empirically found that a small batch size (`4` or `8`) is optimal for the 4GB GPU to avoid `CUDA out of memory` errors.
+        - `--debug` (optional): Runs the pipeline on a small subset of 512 chunks for quick testing.
+
+- **Qdrant Helpers (`src/codesense/processing/vector_store.py`):**
+    - **Functionality:** Contains helpers for Qdrant client initialization and collection management.
+    - **Connection:** The client is fully configurable via `.env` variables (`QDRANT_URL`, `QDRANT_PORT`, `QDRANT_CONNECTION_METHOD`, `QDRANT_USE_TLS`, `QDRANT_API_KEY`).
+
+- **Qdrant Infrastructure Summary:**
+    - **Initial Issue:** The cluster was unstable and unresponsive due to Raft consensus errors, which were caused by running Qdrant's storage on an NFS volume.
+    - **Solution:** The cluster was rebuilt using the correct `storageClassName: localpath` for primary data, while keeping snapshots on NFS for reliability. This resolved all instability and timeout issues.
+    - **Current Access:** The service is exposed via a Kubernetes `LoadBalancer` at `192.168.77.202`.
+
 ### Embedding Pipeline (Completed 2025-11-03)
 
  - **Success:** The full data processing pipeline is now functional. It correctly loads files from multiple source code repositories, skips binary/unreadable files, performs language-aware chunking, and generates embeddings.

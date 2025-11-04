@@ -1,0 +1,22 @@
+# Core LangChain libraries
+langchain
+langchain-community
+langchain-core
+langchain-text-splitters
+
+# Integration with Qdrant
+qdrant-client
+langchain-qdrant
+
+# Hugging Face ecosystem for embeddings
+langchain-huggingface
+transformers
+torch
+accelerate
+
+# Utilities
+python-dotenv
+tqdm
+
+# Development tools
+pip-tools
