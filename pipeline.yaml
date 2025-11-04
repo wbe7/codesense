@@ -1,0 +1,215 @@
+# PIPELINE DEFINITION
+# Name: code-indexing-pipeline
+# Description: A pipeline to sync a code repository, pull DVC data, and run indexing.
+# Inputs:
+#    batch_size: int [Default: 4.0]
+#    branch_name: str [Default: 'main']
+#    collection_name: str [Default: 'codesense-prod']
+#    repo_url: str [Default: 'https://github.com/wbe7/codesense.git']
+components:
+  comp-dvc-sync-op:
+    executorLabel: exec-dvc-sync-op
+    inputDefinitions:
+      parameters:
+        source_dir:
+          defaultValue: /data/source
+          isOptional: true
+          parameterType: STRING
+  comp-indexing-op:
+    executorLabel: exec-indexing-op
+    inputDefinitions:
+      parameters:
+        batch_size:
+          parameterType: NUMBER_INTEGER
+        collection_name:
+          parameterType: STRING
+        source_code_path:
+          parameterType: STRING
+  comp-sync-repo-op:
+    executorLabel: exec-sync-repo-op
+    inputDefinitions:
+      parameters:
+        branch_name:
+          parameterType: STRING
+        repo_url:
+          parameterType: STRING
+        target_dir:
+          defaultValue: /data/source
+          isOptional: true
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-dvc-sync-op:
+      container:
+        command:
+        - sh
+        - -c
+        - "\n                set -e\n                echo \"Syncing DVC data in {{$.inputs.parameters['source_dir']}}\"\
+          \n                \n                cd {{$.inputs.parameters['source_dir']}}\n\
+          \                dvc pull\n                \n                echo \"DVC\
+          \ sync complete.\"\n            "
+        image: wbe7/codesense:latest
+    exec-indexing-op:
+      container:
+        command:
+        - sh
+        - -c
+        - "\n                set -e\n                echo \"Running indexing from\
+          \ {{$.inputs.parameters['source_code_path']}}\"\n                cd {{$.inputs.parameters['source_code_path']}}\
+          \ &&                 python -m codesense.pipelines.indexing.run        \
+          \             --collection-name \"{{$.inputs.parameters['collection_name']}}\"\
+          \                     --batch-size {{$.inputs.parameters['batch_size']}}\n\
+          \            "
+        env:
+        - name: PYTORCH_ALLOC_CONF
+          value: expandable_segments:True
+        image: wbe7/codesense:latest
+    exec-sync-repo-op:
+      container:
+        command:
+        - sh
+        - -c
+        - "\n                set -e\n                echo \"Syncing repository {{$.inputs.parameters['repo_url']}}\
+          \ to {{$.inputs.parameters['target_dir']}}\"\n                \n       \
+          \         mkdir -p {{$.inputs.parameters['target_dir']}}\n             \
+          \   cd {{$.inputs.parameters['target_dir']}}\n                \n       \
+          \         if [ -d \".git\" ]; then\n                    echo \"Repository\
+          \ exists, syncing...\"\n                    git remote set-url origin {{$.inputs.parameters['repo_url']}}\n\
+          \                    git fetch origin\n                    git checkout\
+          \ {{$.inputs.parameters['branch_name']}}\n                    git reset\
+          \ --hard origin/{{$.inputs.parameters['branch_name']}}\n               \
+          \ else\n                    echo \"Repository does not exist, cloning...\"\
+          \n                    # For private repos, the token should be included\
+          \ in the repo_url\n                    # e.g., https://oauth2:<TOKEN>@github.com/user/repo.git\n\
+          \                    git clone --branch {{$.inputs.parameters['branch_name']}}\
+          \ {{$.inputs.parameters['repo_url']}} .\n                fi\n          \
+          \      \n                echo \"Sync complete.\"\n            "
+        image: alpine/git:latest
+pipelineInfo:
+  description: A pipeline to sync a code repository, pull DVC data, and run indexing.
+  name: code-indexing-pipeline
+root:
+  dag:
+    tasks:
+      dvc-sync-op:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-dvc-sync-op
+        dependentTasks:
+        - sync-repo-op
+        inputs:
+          parameters:
+            source_dir:
+              runtimeValue:
+                constant: /data/source
+        taskInfo:
+          name: dvc-sync-op
+      indexing-op:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-indexing-op
+        dependentTasks:
+        - dvc-sync-op
+        inputs:
+          parameters:
+            batch_size:
+              componentInputParameter: batch_size
+            collection_name:
+              componentInputParameter: collection_name
+            source_code_path:
+              runtimeValue:
+                constant: /data/source
+        taskInfo:
+          name: indexing-op
+      sync-repo-op:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-sync-repo-op
+        inputs:
+          parameters:
+            branch_name:
+              componentInputParameter: branch_name
+            repo_url:
+              componentInputParameter: repo_url
+            target_dir:
+              runtimeValue:
+                constant: /data/source
+        taskInfo:
+          name: sync-repo-op
+  inputDefinitions:
+    parameters:
+      batch_size:
+        defaultValue: 4.0
+        isOptional: true
+        parameterType: NUMBER_INTEGER
+      branch_name:
+        defaultValue: main
+        isOptional: true
+        parameterType: STRING
+      collection_name:
+        defaultValue: codesense-prod
+        isOptional: true
+        parameterType: STRING
+      repo_url:
+        defaultValue: https://github.com/wbe7/codesense.git
+        isOptional: true
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.14.6
+---
+platforms:
+  kubernetes:
+    deploymentSpec:
+      executors:
+        exec-dvc-sync-op:
+          pvcMount:
+          - constant: codesense-data-pvc
+            mountPath: /data
+            pvcNameParameter:
+              runtimeValue:
+                constant: codesense-data-pvc
+          secretAsEnv:
+          - keyToEnv:
+            - envVar: AWS_ACCESS_KEY_ID
+              secretKey: AWS_ACCESS_KEY_ID
+            - envVar: AWS_SECRET_ACCESS_KEY
+              secretKey: AWS_SECRET_ACCESS_KEY
+            - envVar: DVC_REMOTE_URL
+              secretKey: DVC_REMOTE_URL
+            secretName: s3-credentials
+            secretNameParameter:
+              runtimeValue:
+                constant: s3-credentials
+        exec-indexing-op:
+          pvcMount:
+          - constant: codesense-data-pvc
+            mountPath: /data
+            pvcNameParameter:
+              runtimeValue:
+                constant: codesense-data-pvc
+          secretAsEnv:
+          - keyToEnv:
+            - envVar: QDRANT_API_KEY
+              secretKey: QDRANT_API_KEY
+            - envVar: QDRANT_URL
+              secretKey: QDRANT_URL
+            - envVar: QDRANT_CONNECTION_METHOD
+              secretKey: QDRANT_CONNECTION_METHOD
+            - envVar: QDRANT_PORT
+              secretKey: QDRANT_PORT
+            - envVar: QDRANT_USE_TLS
+              secretKey: QDRANT_USE_TLS
+            secretName: qdrant-credentials
+            secretNameParameter:
+              runtimeValue:
+                constant: qdrant-credentials
+        exec-sync-repo-op:
+          pvcMount:
+          - constant: codesense-data-pvc
+            mountPath: /data
+            pvcNameParameter:
+              runtimeValue:
+                constant: codesense-data-pvc
