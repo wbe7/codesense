@@ -41,7 +41,7 @@ affinity:
 
 persistence:
   size: 20Gi
-  storageClassName: freenas-nfs-csi
+  storageClassName: localpath
 
 snapshotPersistence:
   enabled: true
