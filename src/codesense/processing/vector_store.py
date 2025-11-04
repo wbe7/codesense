@@ -65,6 +65,26 @@ def create_collection_if_not_exists(
     else:
         print(f"Коллекция '{collection_name}' уже существует.")
 
+def recreate_collection(client: QdrantClient, collection_name: str, embedding_model):
+    """
+    Пересоздает коллекцию в Qdrant, гарантируя ее чистое состояние.
+    Атомарно удаляет коллекцию, если она существует, и создает новую.
+    """
+    print(f"Пересоздаем коллекцию '{collection_name}' для чистого запуска...")
+    
+    # Динамически определяем размер эмбеддингов
+    embedding_size = len(embedding_model.embed_query("test"))
+
+    client.recreate_collection(
+        collection_name=collection_name,
+        vectors_config=models.VectorParams(
+            size=embedding_size,
+            distance=models.Distance.COSINE
+        ),
+    )
+    print(f"Коллекция '{collection_name}' успешно пересоздана.")
+
+
 
 def get_qdrant_vector_store(client: QdrantClient, collection_name: str, embedding_model) -> QdrantVectorStore:
     """

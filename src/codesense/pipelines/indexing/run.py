@@ -4,7 +4,7 @@ from codesense.processing.document_loader import process_and_chunk_documents
 from codesense.processing.embedder import get_embedding_model
 from codesense.processing.vector_store import (
     get_qdrant_client,
-    create_collection_if_not_exists,
+    recreate_collection,
     get_qdrant_vector_store,
 )
 
@@ -14,7 +14,7 @@ def run(collection_name: str, batch_size: int = 64, debug: bool = False):
     Выполняет полный пайплайн индексации:
     1. Загружает и разбивает на чанки документы.
     2. Инициализирует модели и клиенты.
-    3. Создает коллекцию в Qdrant, если необходимо.
+    3. Пересоздает коллекцию в Qdrant для обеспечения чистоты данных.
     4. Итеративно генерирует эмбеддинги и загружает их в Qdrant.
     """
     print("--- Запуск пайплайна индексации ---")
@@ -34,8 +34,8 @@ def run(collection_name: str, batch_size: int = 64, debug: bool = False):
     embedding_model = get_embedding_model()
     qdrant_client = get_qdrant_client()
 
-    # 3. Создание коллекции
-    create_collection_if_not_exists(
+    # 3. Пересоздание коллекции
+    recreate_collection(
         client=qdrant_client,
         collection_name=collection_name,
         embedding_model=embedding_model,
