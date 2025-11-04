@@ -1,174 +1,396 @@
 # CIA Project Status
 
-**Last Completed Step:** Этап 2.3: Эмбеддинги
+**Last Completed Step:** Этап 2.4: Индексация в Qdrant
 
-**Current Step:** Этап 2.4: Индексация в Qdrant
+**Current Step:** Этап 2.5: Baseline RAG с Gemini Pro и Langfuse Prompt Management
 
-**Next Step:** Этап 2.5: Baseline RAG с Gemini Pro и Langfuse Prompt Management
+**Next Step:** Этап 2.6: Интеграция с Langfuse
+
 
 ---
+
+
 
 ## 🧠 Key Context Reminders:
+
 - **Persona:** Senior DevOps Engineer, learning LLMOps.
+
 - **Core Tech:** K8s, Terraform, KFP, vLLM, Langfuse, DeepEval.
+
 - **Method:** Explain ML concepts via DevOps analogies.
+
 - **Goal:** Build a self-hosted Code Intelligence Assistant.
 
+
+
 ---
+
+
 
 ## 📝 Project Artifacts & Notes
 
+
+
+### KFP Indexing Pipeline (Completed 2025-11-04)
+
+
+
+-   **Goal:** Successfully created and compiled a Kubeflow Pipelines (KFP) pipeline for code indexing, orchestrating Git repository synchronization, DVC data pulling, and the core indexing process.
+
+-   **Pipeline Structure:** The pipeline is composed of three distinct, idempotent components:
+
+    1.  **`sync_repo_op` (`src/codesense/pipelines/repo_sync/component.py`):
+
+        *   **Functionality:** Idempotently clones or updates a Git repository onto a shared Persistent Volume Claim (PVC). It checks for the `.git` directory; if present, it performs `git fetch` and `git reset --hard` to sync with the remote branch; otherwise, it clones the repository.
+
+        *   **Image:** Uses `alpine/git:latest` for a lightweight Git environment.
+
+        *   **Parameters:** `repo_url`, `branch_name`, `target_dir` (mounted PVC path).
+
+    2.  **`dvc_sync_op` (`src/codesense/pipelines/dvc_sync/component.py`):
+
+        *   **Functionality:** Idempotently pulls DVC-versioned data from an S3-compatible remote. It runs `dvc pull` within the Git repository cloned by `sync_repo_op`.
+
+        *   **Image:** Uses `wbe7/codesense:latest` (our main project image, which includes DVC).
+
+        *   **Parameters:** `source_dir` (mounted PVC path to the cloned repo).
+
+        *   **Secrets:** Configured to receive S3 credentials (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `DVC_REMOTE_URL`) as environment variables from a Kubernetes Secret named `s3-credentials`.
+
+    3.  **`indexing_op` (`src/codesense/pipelines/indexing/component.py`):
+
+        *   **Functionality:** Executes the Python indexing script (`codesense.pipelines.indexing.run`).
+
+        *   **Image:** Uses `wbe7/codesense:latest`.
+
+        *   **Parameters:** `collection_name`, `batch_size`, `source_code_path` (mounted PVC path to the cloned repo).
+
+        *   **Working Directory:** The component's command explicitly changes directory (`cd`) into `source_code_path` before running the Python script to ensure correct data access.
+
+        *   **Secrets:** Configured to receive Qdrant credentials (`QDRANT_API_KEY`, `QDRANT_URL`, `QDRANT_CONNECTION_METHOD`, `QDRANT_PORT`, `QDRANT_USE_TLS`) as environment variables from a Kubernetes Secret named `qdrant-credentials`. Also sets `PYTORCH_ALLOC_CONF` as a direct environment variable.
+
+-   **Pipeline Orchestration (`src/codesense/pipelines/pipeline.py`):**
+
+    *   **Functionality:** Defines the overall KFP pipeline (`code_indexing_pipeline`) that chains the three components in sequence: `sync_repo_op` -> `dvc_sync_op` -> `indexing_op`.
+
+    *   **Shared Storage:** All three components mount the same PVC (`codesense-data-pvc`) at `/data` to share the Git repository and DVC data.
+
+    *   **KFP SDK Usage:** Utilizes `kfp.kubernetes.mount_pvc` for PVC mounting and `kfp.kubernetes.secret.use_secret_as_env` for injecting secrets, correcting previous `AttributeError` issues.
+
+-   **Compilation:** The pipeline is compiled into `pipeline.yaml` using `src/codesense/pipelines/compile.py`.
+
+-   **Docker Image:** A single "golden" Docker image (`wbe7/codesense:latest`) was built for `linux/amd64` architecture and pushed to Docker Hub, containing all project code and dependencies.
+
+-   **Kubernetes Secrets:** Two Kubernetes Secrets (`s3-credentials`, `qdrant-credentials`) were created in the `team-1` namespace to provide credentials to the pipeline components.
+
+-   **Next Steps:** The `pipeline.yaml` is ready for upload to the Kubeflow UI.
+
+
+
 ### Indexing Pipeline & Qdrant Setup (Completed 2025-11-04)
 
+
+
 - **Indexing Module (`src/codesense/pipelines/indexing/run.py`):**
+
     - **Functionality:** Orchestrates the end-to-end indexing process: document loading, chunking, embedding, and uploading to Qdrant.
+
     - **CLI Parameters:**
+
         - `--collection-name` (required): Specifies the target collection in Qdrant.
+
         - `--batch-size` (optional, default: 64): Controls the number of chunks processed at once. Crucial for managing GPU VRAM usage. Empirically found that a small batch size (`4` or `8`) is optimal for the 4GB GPU to avoid `CUDA out of memory` errors.
+
         - `--debug` (optional): Runs the pipeline on a small subset of 512 chunks for quick testing.
 
+
+
 - **Qdrant Helpers (`src/codesense/processing/vector_store.py`):**
+
     - **Functionality:** Contains helpers for Qdrant client initialization and collection management.
+
     - **Connection:** The client is fully configurable via `.env` variables (`QDRANT_URL`, `QDRANT_PORT`, `QDRANT_CONNECTION_METHOD`, `QDRANT_USE_TLS`, `QDRANT_API_KEY`).
 
+
+
 - **Qdrant Infrastructure Summary:**
+
     - **Initial Issue:** The cluster was unstable and unresponsive due to Raft consensus errors, which were caused by running Qdrant's storage on an NFS volume.
+
     - **Solution:** The cluster was rebuilt using the correct `storageClassName: localpath` for primary data, while keeping snapshots on NFS for reliability. This resolved all instability and timeout issues.
+
     - **Current Access:** The service is exposed via a Kubernetes `LoadBalancer` at `192.168.77.202`.
+
+
 
 ### Embedding Pipeline (Completed 2025-11-03)
 
+
+
  - **Success:** The full data processing pipeline is now functional. It correctly loads files from multiple source code repositories, skips binary/unreadable files, performs language-aware chunking, and generates embeddings.
+
  - **Model Selection:** After encountering size and compatibility issues with `NovaSearch/stella_en_1.5B_v5`, we collaboratively selected and switched to **`Qwen/Qwen3-Embedding-0.6B`**.   
+
  - **Rationale:** This model is a significant improvement as it's smaller (~2.4GB VRAM), explicitly supports programming languages, and is compatible with the latest `transformers` library, resolving all previous blockers.
+
  - **Validation:** A test run successfully generated 100 embeddings with a dimensionality of 1024, confirming the pipeline's correctness from end to end.
+
+
+
 
 
 ### Project Structure and Data Pipeline Refactoring (Completed 2025-11-02)
 
+
+
 - **New Structure:** The project has been reorganized to align with Python development and MLOps best practices. Key directories `src` (for package source code), `data` (for DVC-managed data), and `scripts` (for utility tools) have been created.
+
 - **`codesense.yaml`:** The `codebases.yaml` configuration file was moved to the project root and renamed to `codesense.yaml`, establishing it as the single source of truth for the dataset's composition.
+
 - **Idempotent Script:** The `repositories-converge.py` script was completely reworked. It now resides in the `scripts/` directory, uses a shared `url_parser` utility, ensures idempotency (handles reruns correctly), and manages the entire `data/raw` dataset via a single `.dvc` file.
+
 - **Python Package:** The project is now an installable Python package, configured via `pyproject.toml`. This resolves import issues and establishes a robust foundation for dependency management.
+
+
 
 ### Codebase Dataset Management (Completed 2025-11-02)
 
+
+
 - **DVC S3 Remote:** Configured DVC to use an S3-compatible remote at `http://192.168.77.7:9000` in the `dvc/codesense` bucket. Credentials are stored locally in `.dvc/config.local`.
+
 - **`codebases.yaml`:** Created a configuration file at `codebases/codebases.yaml` to define the list of Git repositories to be used as the dataset.
+
 - **`repositories-converge.py`:** Developed a Python script at `codebases/repositories-converge.py` to automate the process of cloning, DVC-tracking, and pushing the codebases to the S3 remote.
+
+
 
 ### Langfuse Deployment (Completed 2025-11-01)
 
+
+
 - **Deployment:** Deployed Langfuse using the official Helm chart.
+
 - **Namespace:** `langfuse`
+
 - **Ingress:** `langfuse.cloudnative.space` secured with a Cloudflare certificate via cert-manager.
+
 - **SSO:** Configured with Deckhouse Dex as a custom OIDC provider. The `OAuthCallbackError: state mismatch` was resolved by setting `AUTH_CUSTOM_CHECKS: "state"` in the `values.yaml`.
+
 - **Storage:** External S3 bucket `langfuse` on `192.168.77.7:9000`.
+
 - **Persistence:** `freenas-nfs-csi` used for PostgreSQL, ClickHouse, and Redis.
+
 - **Configuration:** Stored in `infra/langfuse/values.yaml`.
+
+
 
 ### Qdrant Deployment Validation (Completed 2025-11-01)
 
+
+
 - **Validation:** Successfully tested the Qdrant deployment by running the test scripts in `infra/qdrant/test`.
+
 - **Scripts:** `insert_data.py`, `search_data.py`, and `cleanup_data.py` all executed without errors.
+
 - **Confirmation:** This confirms that the Qdrant cluster is operational and accessible via its ingress.
+
+
 
 ### Qdrant Deployment (Completed 2025-11-01)
 
+
+
 - **Deployment:** Deployed Qdrant cluster using the official Helm chart.
+
 - **Namespace:** `qdrant`
+
 - **Ingress:** `qdrant.cloudnative.space` secured with a Cloudflare certificate via cert-manager.
+
 - **Storage:** `freenas-nfs-csi` used for persistence.
+
 - **Configuration:** Stored in `infra/qdrant/values.yaml`.
+
+
 
 ### Hardware & Model Strategy (Agreed on 2025-10-25)
 
+
+
 - **Initial Hardware:** The project will start using a laptop with an **NVIDIA 3050 4GB** as the primary Kubernetes GPU worker node.
+
 - **Future Hardware:** We plan to later introduce a more powerful node with an **NVIDIA 3060 12GB** GPU. This will allow for a direct performance and quality comparison.
+
 - **Initial Model Strategy:** Due to the 4GB VRAM constraint, we will select a small but state-of-the-art model (e.g., `TinyLlama-1.1B`, `CodeGemma-2B`, or a better alternative available as of Oct 2025). The goal is to have a model small enough for fine-tuning and inference on the available hardware.
+
 - **Model Progression:** The initial small model will allow us to build and validate the entire MLOps pipeline end-to-end. After upgrading the hardware, we will switch to a larger, more capable model (~8B parameters). This will provide a clear case study on how model size impacts performance and answer quality within the same infrastructure.
+
 - **Iterative Re-training:** The system is designed for iterative improvement. Model interactions will be logged and traced in Langfuse. This data will be periodically reviewed to create new, high-quality training examples, which will be used to re-run the fine-tuning pipeline and deploy improved model versions.
+
+
 
 ### GPU Node Setup (Completed 2025-10-27)
 
+
+
 - **GPU Node:** `kube-gpu-small-1` (NVIDIA GeForce RTX 3050 Laptop GPU, 4GB VRAM) successfully integrated into the Kubernetes cluster.
+
 - **GPU Management:** NVIDIA GPU Operator installed and configured for automated driver, container toolkit, and device plugin management.
+
 - **GPU Configuration:**
+
     - `gpu-small` NodeGroup configured for **Time-Slicing** (4 virtual GPUs).
+
     - `gpu-standard` NodeGroup configured for **Exclusive** access.
+
 - **Deckhouse Integration:** Resolved `admission-policy-engine` conflict by labeling `gpu-operator` namespace with `security.deckhouse.io/pod-policy=privileged`.
+
 - **Validation:** Confirmed GPU resource allocation (`nvidia.com/gpu: 4`) and successful execution of CUDA workloads via a test pod.
+
+
 
 ### deployKF Configuration (Completed 2025-10-29)
 
+
+
 - **`values.yaml` Configuration:**
+
     - `argocd.source.repo.url`: `https://github.com/wbe7/codesense.git`
+
     - `argocd.source.repo.revision`: `main`
+
     - `argocd.source.repo.path`: `infra/deploykf/manifests`
+
     - `deploykf_dependencies.cert_manager.clusterIssuer.issuerName`: `cloudflare`
+
     - `deploykf_core.deploykf_istio_gateway.gateway.hostname`: `deploykf.cloudnative.space`
+
     - `deploykf_core.deploykf_istio_gateway.gatewayService.loadBalancerIP`: `192.168.77.207`
+
     - `deploykf_opt.deploykf_minio.enabled`: `false` (using external S3)
+
     - `deploykf_opt.deploykf_mysql.persistence.storageClass`: `freenas-nfs-csi`
+
     - `deploykf_core.deploykf_auth.valuesOverrides` for `generate.kubectlImage.repository`: `docker.io/bitnamilegacy/kubectl`
+
     - `deploykf_opt.deploykf_mysql.valuesOverrides` for `generate.kubectlImage.repository`: `docker.io/bitnamilegacy/kubectl`
+
 - **ArgoCD Installation:**
+
     - `install_argocd.sh` and `sync_argocd_apps.sh` scripts moved to `infra/deploykf/`.
+
     - `argocd-install` directory created with necessary plugin files.
+
     - `assets-pvc.yaml` updated with `storageClassName: freenas-nfs-csi`.
+
     - `argocd` CLI installed via Homebrew.
+
     - `app-of-apps.yaml` applied to create the main ArgoCD application.
+
 - **Cert-Manager Configuration:**
+
     - `ModuleConfig` for `cert-manager` applied with Cloudflare API token and email.
+
     - `cloudflare` ClusterIssuer successfully created by Deckhouse.
+
 - **DNS Configuration:**
+
     - `cloudnative.space` domain fully delegated to Cloudflare.
+
     - `A` record for `*.deploykf.cloudnative.space` configured to point to the external IP.
+
 - **Troubleshooting Notes:**
+
     - Added instructions to `infra/deploykf/README.md` for manually labeling `deploykf-auth` and `deploykf-dashboard` namespaces with `security.deckhouse.io/pod-policy=privileged` to resolve admission webhook errors.
+
+
 
 ### Kubeflow Deployment Troubleshooting (Completed 2025-10-30)
 
+
+
 - **Issue 1: `ml-pipeline-ui-artifact` pod stuck due to missing secret `cloned--pipelines-object-store-auth` in `team-1-prod`.**
+
     - **Root Cause:**
+
         - Kyverno `ClusterPolicy` `argo-workflows--clone-bucket-secret` was cloning the secret with an incorrect name (`cloned--kubeflow-pipelines--backend-object-store-auth`) and only to `kubeflow-argo-workflows` namespace, not to profile namespaces.
+
         - `deploykf`'s `values.yaml` was configured for `accessKey` and `secretKey`, but the pod expected `access_key` and `secret_key`.
+
     - **Resolution:**
+
         - Updated `infra/deploykf/values.yaml`:
+
             - `kubeflow_tools.pipelines.objectStore.auth.existingSecretAccessKeyKey` set to `access_key`.
+
             - `kubeflow_tools.pipelines.objectStore.auth.existingSecretSecretKeyKey` set to `secret_key`.
+
         - Created custom Kyverno `ClusterPolicy` (`infra/deploykf/fix-secret-cloning-policy.yaml`) to correctly clone `deploykf-s3-credentials` from `kubeflow` to namespaces with label `pipelines.kubeflow.org/enabled: "true"` under the name `cloned--pipelines-object-store-auth`.
+
         - User re-created `deploykf-s3-credentials` with correct key names (`access_key`, `secret_key`).
+
         - Applied the custom `ClusterPolicy`.
+
         - Regenerated manifests and synced ArgoCD.
 
+
+
 - **Issue 2: `ml-pipeline-ui-artifact` pod stuck due to `tls: failed to verify certificate: x509: certificate signed by unknown authority` from `poddefaults-webhook`.**
+
     - **Root Cause:**
+
         - `MutatingWebhookConfiguration` for `poddefaults-webhook` had an empty `caBundle`.
+
         - `cert-manager-cainjector` was disabled in Deckhouse, preventing `caBundle` injection.
+
         - The `Certificate` resource for the webhook was configured to use a local `Issuer` instead of a trusted `ClusterIssuer`.
+
     - **Resolution:**
+
         - Re-enabled `kubeflow_tools.poddefaults_webhook` in `infra/deploykf/values.yaml`.
+
         - User enabled `enableCAInjector: true` in Deckhouse `cert-manager` module configuration.
+
         - Deleted and recreated the `MutatingWebhookConfiguration` `admission-webhook-mutating-webhook-configuration` to force `cert-manager-cainjector` to inject the `caBundle`.
+
         - Verified `caBundle` injection and pod status.
+
+
 
 ### Deckhouse Dex Integration (Completed 2025-10-31)
 
+
+
 - **Integration Strategy:** Configured `deploykf`'s internal Dex to use the existing Deckhouse Dex as an external OIDC provider.
+
 - **`DexClient` Creation:** Created a `DexClient` resource for `deploykf` in the `deploykf-auth` namespace. This generated a `clientID` (`dex-client-deploykf@deploykf-auth`) and a `clientSecret`.
+
 - **OIDC Connector Configuration:**
+
     - The OIDC connector configuration was stored in a Kubernetes Secret (`deploykf-dex-connector-config`) to avoid hardcoding secrets in `values.yaml`.
+
     - `values.yaml` was updated to reference this secret using `configExistingSecret` and `configExistingSecretKey`.
+
     - `issuer` URL was set to `https://dex.cloudnative.space/` (with a trailing slash).
+
     - `redirectURI` was set to `https://deploykf.cloudnative.space:8443/dex/callback`.
+
 - **User Authorization:**
+
     - Defined the user `admin@skeaper.tech` in the `users` section of `values.yaml`.
+
     - Created `team-1--admins` and `team-1--users` groups.
+
     - Assigned the user to the `team-1--admins` group.
+
     - Configured `team-1` and `team-1-prod` profiles to grant `edit` and `view` access to the respective groups.
+
+
 
 ### Kubeflow Notebook Images (Discovered 2025-10-31)
 
+
+
 - **Best Practice:** To avoid dependency issues (e.g., with NumPy, CUDA drivers), always use the pre-built, specialized Docker images provided by Kubeflow when creating Jupyter notebooks.
+
 - **Example:** For GPU-accelerated TensorFlow, select an image like `kubeflownotebookswg/jupyter-tensorflow-cuda-full:v1.8.0`. This ensures that the framework, drivers, and all necessary libraries are correctly installed and configured out-of-the-box, eliminating the need for manual `pip install` commands or environment variable adjustments.
