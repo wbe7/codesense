@@ -2,6 +2,7 @@
 examples/
 infra/secrets
 .venv/
+.venv-backup/
 .dvc/config.local
 .env
 __pycache__/
