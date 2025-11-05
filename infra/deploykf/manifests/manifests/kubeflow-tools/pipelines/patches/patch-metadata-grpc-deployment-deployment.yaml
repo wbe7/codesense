@@ -21,3 +21,11 @@ spec:
                 secretKeyRef:
                   name: "cloned--pipelines-mysql-secret"
                   key: "password"
+
+            ## ================================
+            ## MANUAL PATCH: Increase GRPC message lengths to 100MB
+            ## ================================
+            - name: GRPC_MAX_RECEIVE_MESSAGE_LENGTH
+              value: "104857600"  # 100MB
+            - name: GRPC_MAX_SEND_MESSAGE_LENGTH  
+              value: "104857600"   # 100MB

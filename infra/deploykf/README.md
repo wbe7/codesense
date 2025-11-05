@@ -25,6 +25,18 @@
 deploykf generate --source-version 0.1.5 --values infra/deploykf/values.yaml --output-dir infra/deploykf/manifests
 ```
 
+### ВАЖНО!!!
+После генерации манифестов необходимо вручную увеличить максимальный размер сообщения для GRPC на 100MB в файле `infra/deploykf/manifests/manifests/kubeflow-tools/pipelines/patches/patch-metadata-grpc-deployment-deployment.yaml`.
+```yaml
+            ## ================================
+            ## MANUAL PATCH: Increase GRPC message lengths to 100MB
+            ## ================================
+            - name: GRPC_MAX_RECEIVE_MESSAGE_LENGTH
+              value: "104857600"  # 100MB
+            - name: GRPC_MAX_SEND_MESSAGE_LENGTH  
+              value: "104857600"   # 100MB
+```
+
 ### 2. Установка ArgoCD
 
 Мы используем специальный скрипт для установки ArgoCD с плагином deployKF.
@@ -103,3 +115,4 @@ kubectl label namespace team-1 security.deckhouse.io/pod-policy=privileged
 ```bash
 kubectl label namespace team-1-prod security.deckhouse.io/pod-policy=privileged
 ```
+
