@@ -1,4 +1,4 @@
-.gemini/tmp
+.gemini*
 examples/
 infra/secrets
 .venv/
