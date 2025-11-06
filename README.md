@@ -127,3 +127,12 @@ python -m codesense.pipelines.indexing.run --collection-name "имя-вашей-
 *   `--debug` (опциональный): Запускает пайплайн в режиме отладки. В этом режиме для индексации используется только небольшая часть данных (первые 512 чанков), что позволяет быстро проверить работоспособность всего процесса.
     *   *Пример:* `python -m codesense.pipelines.indexing.run --collection-name "test" --debug`
     *   *Пример:* `python -m codesense.pipelines.indexing.run --collection-name "codesense-dev" --batch-size 4 --debug`
+
+### Компиляция KFP-пайплайна
+
+```bash
+# Активируйте виртуальное окружение, если еще не сделали этого
+# source .venv/bin/activate
+
+python -m codesense.pipelines.compile
+```
