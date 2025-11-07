@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kserve-wildcard-cert
+  namespace: kserve
+spec:
+  secretName: kserve-wildcard-cert
+  dnsNames:
+  - "*.kserve.cloudnative.space"
+  issuerRef:
+    name: cloudflare
+    kind: ClusterIssuer

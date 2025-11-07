@@ -4,4 +4,14 @@ src/codesense.egg-info/PKG-INFO
 src/codesense.egg-info/SOURCES.txt
 src/codesense.egg-info/dependency_links.txt
 src/codesense.egg-info/top_level.txt
+src/codesense/pipelines/compile.py
+src/codesense/pipelines/pipeline.py
+src/codesense/pipelines/dvc_sync/component.py
+src/codesense/pipelines/indexing/component.py
+src/codesense/pipelines/indexing/run.py
+src/codesense/pipelines/repo_sync/component.py
+src/codesense/processing/document_loader.py
+src/codesense/processing/embedder.py
+src/codesense/processing/vector_store.py
+src/codesense/utils/config.py
 src/codesense/utils/url_parser.py

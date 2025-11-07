@@ -1,0 +1,89 @@
+# Установка KServe
+
+В этом документе описан пошаговый процесс установки KServe с использованием Gateway API.
+
+## 1. Установка базовых API (CRDs)
+
+Первым шагом необходимо установить Custom Resource Definitions (CRDs), которые добавляют в Kubernetes новые типы ресурсов.
+
+### 1.1. Gateway API CRDs
+
+Эти CRD добавляют ресурсы `Gateway`, `GatewayClass`, `HTTPRoute` и другие, необходимые для работы новой сетевой модели в Kubernetes.
+
+```bash
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
+```
+
+### 1.2. KServe CRDs
+
+Эти CRD добавляют основной ресурс `InferenceService`, а также связанные с ним `TrainedModel` и `InferenceGraph`. Мы устанавливаем их с помощью официального Helm-чарта. Эта команда также создаст неймспейс `kserve`.
+
+```bash
+helm install kserve-crd oci://ghcr.io/kserve/charts/kserve-crd --version v0.15.0 --namespace kserve --create-namespace
+```
+
+## 2. Развертывание сетевого контроллера
+
+Теперь, когда в кластере есть определения для Gateway API, нужно установить сам контроллер, который будет их реализовывать. Мы используем Envoy Gateway — одну из эталонных реализаций Gateway API.
+
+Устанавливаем его с помощью Helm в отдельный неймспейс `envoy-gateway-system`.
+
+```bash
+helm install eg oci://docker.io/envoyproxy/gateway-helm --version v1.5.4 -n envoy-gateway-system --create-namespace
+```
+
+## 3. Создание и настройка шлюза
+
+На этом этапе мы создаем саму точку входа в кластер для KServe. Все конфигурации хранятся в виде YAML-файлов в этой же директории (`infra/kserve`).
+
+### 3.1. Создание GatewayClass
+
+`GatewayClass` — это шаблон для создания шлюзов. Мы создаем один класс для Envoy.
+
+```bash
+kubectl apply -f infra/kserve/01-gatewayclass.yaml
+```
+
+### 3.2. Создание Gateway
+
+Создаем сам шлюз, указывая для него наш `GatewayClass`, статический IP-адрес и порты. Это действие приведет к созданию Service типа LoadBalancer.
+
+```bash
+kubectl apply -f infra/kserve/02-gateway.yaml
+```
+
+### 3.3. Выпуск сертификата
+
+Создаем ресурс `Certificate`, который `cert-manager` использует для автоматического выпуска wildcard-сертификата и его привязки к нашему шлюзу.
+
+```bash
+kubectl apply -f infra/kserve/03-certificate.yaml
+```
+
+## 4. Установка KServe
+
+Теперь, когда вся необходимая инфраструктура готова, устанавливаем сам KServe.
+
+### 4.1. Конфигурация KServe
+
+Мы управляем конфигурацией KServe через специальный `values.yaml` файл. В нем мы указываем, что KServe должен работать в режиме `Standard` и использовать наш ранее созданный шлюз `kserve-ingress-gateway`.
+
+Содержимое файла `infra/kserve/values.yaml`:
+```yaml
+controller:
+  deploymentMode: Standard
+  ingress:
+    enableGatewayApi: true
+    kserveIngressGateway: "kserve/kserve-ingress-gateway"
+    ingressDomain: "kserve.cloudnative.space"
+    urlScheme: "https"
+```
+
+### 4.2. Установка Helm-чарта
+
+Устанавливаем KServe, применяя нашу конфигурацию.
+
+```bash
+helm upgrade -i kserve oci://ghcr.io/kserve/charts/kserve --version v0.15.0 -n kserve -f infra/kserve/values.yaml
+kubectl rollout restart deployment kserve-controller-manager -n kserve
+```

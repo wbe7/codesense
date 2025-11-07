@@ -1,0 +1,10 @@
+kserve:
+  controller:
+    deploymentMode: RawDeployment
+    gateway:
+      domain: "kserve.cloudnative.space"
+      urlScheme: "https"
+      domainTemplate: "{{ .Name }}-{{ .Namespace }}.{{ .IngressDomain }}"
+      ingressGateway:
+        enableGatewayApi: true
+        kserveGateway: "kserve/kserve-ingress-gateway"
