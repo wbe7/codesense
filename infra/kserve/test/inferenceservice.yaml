@@ -1,19 +1,21 @@
 apiVersion: "serving.kserve.io/v1beta1"
 kind: "InferenceService"
 metadata:
-  name: "qwen-llm"
+  name: "t5-llm"
 spec:
   predictor:
     model:
       modelFormat:
         name: huggingface
       args:
-        - --model_name=qwen
-      storageUri: "hf://Qwen/Qwen3-0.6B-FP8"
+        - --model_name=flan-t5-small
+      storageUri: "hf://google/flan-t5-small"
       resources:
         limits:
           cpu: "2"
           memory: 6Gi
+          nvidia.com/gpu: "1"
         requests:
           cpu: "1"
-          memory: 4Gi
+          memory: 2Gi
+          nvidia.com/gpu: "1"

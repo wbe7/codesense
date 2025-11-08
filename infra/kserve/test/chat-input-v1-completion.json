@@ -1,0 +1,5 @@
+{
+  "model": "flan-t5-small",
+  "prompt": "Write a short poem about artificial intelligence and machine learning.",
+  "max_tokens": 150
+}

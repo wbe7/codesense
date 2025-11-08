@@ -66,24 +66,42 @@ kubectl apply -f infra/kserve/03-certificate.yaml
 
 ### 4.1. Конфигурация KServe
 
-Мы управляем конфигурацией KServe через специальный `values.yaml` файл. В нем мы указываем, что KServe должен работать в режиме `Standard` и использовать наш ранее созданный шлюз `kserve-ingress-gateway`.
+Мы управляем конфигурацией KServe через специальный `values.yaml` файл. В ходе отладки мы выяснили правильную, рабочую структуру этого файла.
+
+**Важно:** Несмотря на то, что в документации KServe может упоминаться `deploymentMode: Standard`, на практике для Helm-чарта `v0.15.0` рабочим значением оказалось `RawDeployment`.
 
 Содержимое файла `infra/kserve/values.yaml`:
 ```yaml
-controller:
-  deploymentMode: Standard
-  ingress:
-    enableGatewayApi: true
-    kserveIngressGateway: "kserve/kserve-ingress-gateway"
-    ingressDomain: "kserve.cloudnative.space"
-    urlScheme: "https"
+kserve:
+  controller:
+    # Указываем режим 'RawDeployment', который эквивалентен 'Standard'
+    deploymentMode: RawDeployment
+    gateway:
+      # Наш базовый домен
+      domain: "kserve.cloudnative.space"
+      # Генерировать https-ссылки
+      urlScheme: "https"
+      # Шаблон для URL, который покрывается wildcard-сертификатом (*.kserve.cloudnative.space)
+      domainTemplate: "{{ .Name }}.{{ .Namespace }}.{{ .IngressDomain }}"
+      # Секция для указания нашего шлюза
+      ingressGateway:
+        enableGatewayApi: true
+        kserveGateway: "kserve/kserve-ingress-gateway"
 ```
 
 ### 4.2. Установка Helm-чарта
 
-Устанавливаем KServe, применяя нашу конфигурацию.
+Устанавливаем KServe (или обновляем, если он уже был установлен) с применением нашей конфигурации.
 
 ```bash
 helm upgrade -i kserve oci://ghcr.io/kserve/charts/kserve --version v0.15.0 -n kserve -f infra/kserve/values.yaml
+```
+
+После обновления рекомендуется перезапустить контроллер, чтобы он гарантированно подхватил все изменения.
+```bash
 kubectl rollout restart deployment kserve-controller-manager -n kserve
 ```
+
+## 5. Тестирование
+
+После установки необходимо провести тестирование, развернув тестовую модель. Подробная инструкция находится в `infra/kserve/test/README.md`.
