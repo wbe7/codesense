@@ -8,3 +8,9 @@ kserve:
       ingressGateway:
         enableGatewayApi: true
         kserveGateway: "kserve/kserve-ingress-gateway"
+  storage:
+    s3:
+      endpoint: "http://192.168.77.7:9000"
+      useHttps: "0"
+      verifySSL: "0"
+      region: ""

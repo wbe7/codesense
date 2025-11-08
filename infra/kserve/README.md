@@ -102,6 +102,40 @@ helm upgrade -i kserve oci://ghcr.io/kserve/charts/kserve --version v0.15.0 -n k
 kubectl rollout restart deployment kserve-controller-manager -n kserve
 ```
 
-## 5. Тестирование
+## 5. Настройка S3 хранилища (Опционально)
+
+Чтобы KServe мог скачивать модели из вашего приватного S3-совместимого хранилища, необходимо выполнить два шага.
+
+### 5.1. Создание секрета
+
+Сначала нужно создать Kubernetes-секрет с вашими учетными данными. KServe по умолчанию ищет секрет с именем `storage-config`. Выполните команду ниже, подставив ваши реальные ключи вместо `YOUR_ACCESS_KEY` и `YOUR_SECRET_KEY`.
+
+```bash
+kubectl create secret generic storage-config -n kserve \
+  --from-literal=AWS_ACCESS_KEY_ID='YOUR_ACCESS_KEY' \
+  --from-literal=AWS_SECRET_ACCESS_KEY='YOUR_SECRET_KEY'
+```
+
+### 5.2. Обновление конфигурации KServe
+
+Добавьте в `infra/kserve/values.yaml` секцию `storage`, чтобы указать эндпоинт вашего S3.
+
+```yaml
+# infra/kserve/values.yaml
+
+kserve:
+  # ... (секция controller) ...
+
+  storage:
+    s3:
+      endpoint: "http://192.168.77.7:9000"
+      useHttps: "0"
+      verifySSL: "0"
+      region: "" # Оставляем пустым, если не используется
+```
+
+После этого примените изменения командой `helm upgrade`, как в шаге 4.2.
+
+## 6. Тестирование
 
 После установки необходимо провести тестирование, развернув тестовую модель. Подробная инструкция находится в `infra/kserve/test/README.md`.
