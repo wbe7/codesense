@@ -14,3 +14,6 @@ kserve:
       useHttps: "0"
       verifySSL: "0"
       region: ""
+  servingruntime:
+    tritonserver:
+      tag: 24.05-py3
